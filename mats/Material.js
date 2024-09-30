@@ -1,12 +1,9 @@
 class Material {
 
-    constructor(gl, shader, uniformsAry, texturesAry, drawMode, useModelMatrix, useNormalMatrix) {
+    constructor(gl, shader, drawMode, useModelMatrix, useNormalMatrix) {
         this.gl = gl;
         //this.name = name;
         this.shader = shader;
-        this.uniformsAry = uniformsAry;
-        //this.uniformsBlock = Uniforms.create("uniforms", uniformsAry);
-        this.texturesAry = texturesAry;
 
         this.useCulling = gl.CULLING_STATE;
         this.useBlending = gl.BLENDING_STATE;

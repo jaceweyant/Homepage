@@ -214,13 +214,10 @@
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
 				gIcosShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
-				gIcosMaterial = new Material(gl, gIcosShader, null, null, gl.TRIANGLES);
+				gIcosMaterial = new Material(gl, gIcosShader, gl.TRIANGLES);
 
 				gNameShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
-				gNameMaterial = new Material(gl, gNameShader, null, null, gl.TRIANGLES);
-
-				//gIcosShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
-				//gNameShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
+				gNameMaterial = new Material(gl, gNameShader, gl.TRIANGLES);
 
 				//....................................
 				//Add UI Functionality
@@ -271,24 +268,18 @@
 				//................................
 				//Draw Out models
 				gIcosMaterial.activateShader().createUniforms(icosUniformsData);
-				//gNameMaterial.activateShader().createUniforms(nameUniformsData);
 
 
 				gRenderer = new Renderer(gl);
 				gRenderer.preRender()
 					.renderModel(gIcos, gIcosMaterial, true)
-					//.renderModel(gName, gNameShader, true);
-				
-				/*
-				gIcosShader.activate()
-					.createUniforms(icosUniformsData)
-					.createTextures([["uTexture", "tex001"]])
-					.renderModel(gIcos);
-				gNameShader.activate()
-					.createUniforms(nameUniformsData)
-					.createTextures([["uTexture", "tex002"]])
-					.renderModel(gName);
-				*/
+				gIcosMaterial.deactivateShader();
+
+				gNameMaterial.activateShader().createUniforms(nameUniformsData);
+				gRenderer.preRender()
+					.renderModel(gName, gNameShader, true);
+				gNameMaterial.deactivateShader();
+
 			}
 
 		</script>
