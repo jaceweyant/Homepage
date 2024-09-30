@@ -7,8 +7,8 @@ class Uniforms {
 
     static create(blockName, ary) {
         this.blockName = blockName;
-        this.raw = ary;
-        this.block = Uniforms.createBlock(ary);
+        this.raw = ary || null;
+        this.block = Uniforms.createBlock(this.raw);
         Resources.UniformBlocks[blockName] = this.block;
         return this;
     }

@@ -1,4 +1,7 @@
 class Renderer {
+
+    constructor(gl) {this.gl = gl;}
+
     	//Setup custom properties
 	preRender(){
 		//abstract method, extended object may need need to do some things before rendering.

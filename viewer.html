@@ -161,13 +161,20 @@
 		<!--MATH-->
 		<script src="math/Math.js"></script>
 		<!--MATS-->
-		<script src="Shader.js"></script>
+		<script src="mats/Uniforms.js"></script>
+		<script src="mats/Material.js"></script>
+		<script src="mats/Shader.js"></script>
 		<!--RENDERING-->
-		<script src="RenderLoop.js"></script>
+		<script src="rendering/Renderer.js"></script>
+		<script src="rendering/RenderLoop.js"></script>
+
 
 	  <!--MAIN------------------------------------------------------------------------------------------->
 		<script>
-			var gl, gRLoop,	gIcosShader, gIcos, gNameShader, gName, gCamera, gIcosCtrl, gLight;
+			var gl, gRLoop,	
+				gIcosShader, gIcosMaterial, gIcos, 
+				gNameShader, gNameMaterial, gName, 
+				gCamera, gIcosCtrl, gLight;
 			var mDebug, mDebugLine;
 			var oUI;
 
@@ -206,8 +213,14 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				gIcosShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
-				gNameShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
+				gIcosShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gIcosMaterial = new Material(gl, gIcosShader, null, null, gl.TRIANGLES);
+
+				gNameShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gNameMaterial = new Material(gl, gNameShader, null, null, gl.TRIANGLES);
+
+				//gIcosShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
+				//gNameShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
 
 				//....................................
 				//Add UI Functionality
@@ -257,6 +270,16 @@
 
 				//................................
 				//Draw Out models
+				gIcosMaterial.activateShader().createUniforms(icosUniformsData);
+				gNameMaterial.activateShader().createUniforms(nameUniformsData);
+
+
+				gRenderer = new Renderer(gl);
+				gRenderer.preRender()
+					.renderModel(gIcos, gIcosShader, true)
+					.renderModel(gName, gNameShader, true);
+				
+				/*
 				gIcosShader.activate()
 					.createUniforms(icosUniformsData)
 					.createTextures([["uTexture", "tex001"]])
@@ -265,6 +288,7 @@
 					.createUniforms(nameUniformsData)
 					.createTextures([["uTexture", "tex002"]])
 					.renderModel(gName);
+				*/
 			}
 
 		</script>

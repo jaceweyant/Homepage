@@ -1,20 +1,59 @@
 class Material {
 
-    constructor(gl, name, shader, uniformsAry, texturesAry, drawMode, useModelMatrix, useNormalMatrix) {
+    constructor(gl, shader, uniformsAry, texturesAry, drawMode, useModelMatrix, useNormalMatrix) {
         this.gl = gl;
-        this.name = name;
+        //this.name = name;
         this.shader = shader;
-        this.uniformsBlock = Uniforms.create(name, uniformsAry);
+        this.uniformsAry = uniformsAry;
+        //this.uniformsBlock = Uniforms.create("uniforms", uniformsAry);
         this.texturesAry = texturesAry;
 
-        this.useCulling = CULLING_STATE;
-        this.useBlending = BLENDING_STATE;
+        this.useCulling = gl.CULLING_STATE;
+        this.useBlending = gl.BLENDING_STATE;
         this.useModelMatrix = useModelMatrix || true;
         this.useNormalMatrix = useNormalMatrix || false;
 
         this.drawMode = drawMode || gl.TRIANGLES;
     }
 
+    //---------------------------------------------------
+	// Create the Uniforms/Textures
+	//---------------------------------------------------
+	// Takes in one argument which is an array of triples which each represent one uniform and its neccessary info
+	// ex: [["uName1", "1fv", val1], ["uName2", "3fv", val2]]
+	createUniforms(uniformsArr) {
+		//if (!uniformsArr.isArray) {console.log("argument needs to be an array"); return this;}
+
+		var iLoc = 0,
+			iName = "",
+			iType = "",
+			iVal = 0;
+		if (uniformsArr.length > 0) {
+			for (var i=0; i<uniformsArr.length; i++) {
+				iName = uniformsArr[i][0];
+				iType = uniformsArr[i][1];
+				iVal = uniformsArr[i][2];
+
+				iLoc = gl.getUniformLocation(this.shader.program, iName);
+				//if (iLoc != null) {this.mUniformList[i] = {loc:iLoc, type:iType}}
+				//else {console.log("location of uniform not found: " + iName); return this;}
+
+				switch(iType) {
+					case "1f":		{this.gl.uniform1f(iLoc, iVal); break;}
+					case "2fv": 	{this.gl.uniform2fv(iLoc, new Float32Array(iVal)); break;}
+					case "3fv": 	{this.gl.uniform3fv(iLoc, new Float32Array(iVal)); break;}
+					case "4fv": 	{this.gl.uniform4fv(iLoc, new Float32Array(iVal)); break;}
+					case "mat3": 	{this.gl.uniformMatrix3fv(iLoc, false, iVal); break;}
+					case "mat4": 	{this.gl.uniformMatrix4fv(iLoc, false, iVal); break;}
+					default: 		{console.log("unknown uniform type for " + iName + ": " + iType);}
+				}
+			}
+		}
+		return this;
+	}
+
+
+    /*
     createUniforms() {
 
         var uLoc = 0,
@@ -44,10 +83,12 @@ class Material {
         }
         return this;
     }
+    */
 
 	// takes in an argument texturesArr which is an array of doubles each representing one texture
 	// ex: [[uniformName, cacheTextureName]]
 	createTextures(texturesArr) {
+        if (!texturesArr) return null;
 		var iLoc = 0,
 			iTex = "";
 		var texSlot;
