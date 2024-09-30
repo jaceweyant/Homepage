@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 	<head>
+
+	  <!--WEBPAGE STYLE-------------------------------------------------------------------------->
 		<style>
 			html,body{margin:0px; padding:0px; width:100%; height:100%;}
 			body{background-color: black;}
@@ -68,6 +70,7 @@
 
 		</style>
 
+	  <!--PARAMATER CONTROL UI----------------------------------------------------------------->
 		<div id="uniforms-UI">
 			<h1 id="uniforms-title">UNIFORMS</h1>
 			<br>
@@ -141,18 +144,28 @@
 			</div>
 		</div>
 
+	  <!--SCRIPTS------------------------------------------------------------------------------>
+		<!--GL CONTEXT SETUP-->
 		<script src="gl.js"></script>
-		<script src="Math.js"></script>
+		<!--COMPONENTS-->
+		<script src="components/Model.js"></script>
+		<script src="components/Camera.js"></script>
+		<script src="components/Light.js"></script>
+			<!--BUILD-->
+			<script src="components/build/ObjLoader.js"></script>
+			<script src="components/build/Primitives.js"></script>
+			<!--TRANSFORM-->
+			<script src="components/transform/Transform.js"></script>
+			<script src="components/transform/MouseEffects.js"></script>
+			<script src="components/transform/paramCtrl-UI.js"></script>
+		<!--MATH-->
+		<script src="math/Math.js"></script>
+		<!--MATS-->
 		<script src="Shaders.js"></script>
+		<!--RENDERING-->
 		<script src="RenderLoop.js"></script>
-		<script src="Transform.js"></script>
-		<script src="Model.js"></script>
-		<script src="Camera.js"></script>
-		<script src="MouseEffects.js"></script>
-		<script src="ObjLoader.js"></script>
-		<script src="Light.js"></script>
-		<script src="UI.js"></script>
 
+	  <!--MAIN------------------------------------------------------------------------------------------->
 		<script>
 			var gl, gRLoop,	gIcosShader, gIcos, gNameShader, gName, gCamera, gIcosCtrl, gLight;
 			var mDebug, mDebugLine;
