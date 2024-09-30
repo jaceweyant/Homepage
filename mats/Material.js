@@ -1,59 +1,82 @@
 class Material {
-    constructor() {
-        this.gl = null;
-        this.name = "";
-        this.shader = null;
-        this.uniformsAry = [];
+
+    constructor(gl, name, shader, uniformsAry, texturesAry, drawMode, useModelMatrix, useNormalMatrix) {
+        this.gl = gl;
+        this.name = name;
+        this.shader = shader;
+        this.uniformsBlock = Uniforms.create(name, uniformsAry);
+        this.texturesAry = texturesAry;
 
         this.useCulling = CULLING_STATE;
         this.useBlending = BLENDING_STATE;
-        this.useModelMatrix = true;
-        this.useNormalMatrix = false;
+        this.useModelMatrix = useModelMatrix || true;
+        this.useNormalMatrix = useNormalMatrix || false;
 
-        this.drawMode = gl.TRIANGLES;
+        this.drawMode = drawMode || gl.TRIANGLES;
     }
-
-    static create(gl, name, shader, uniformsAry, useModelMatrix, useNormalMatrix) {
-        var m = new Material();
-        m.gl = gl;
-        m.name = name;
-        m.shader = shader;
-        m.uniformsAry = uniformsAry;
-        m.useModelMatrix = useModelMatrix || true;
-        m.useNormalMatrix = useNormalMatrix || false;
-        return m;
-    }
-
 
     createUniforms() {
-        if (!this.uniformsAry.isArray) {console.log("argument needs to be an array"); return this;}
 
-        var iLoc = 0,
-            iName = "",
-            iType = "",
-            iVal = 0;
-            
-        if (this.uniformsAry.length > 0) {
-            for (var i=0; i<this.uniformsAry.length; i++) {
-                iName = this.uniformsAry[i][0];
-                iType = this.uniformsAry[i][1];
-                iVal = this.uniformsAry[i][2];
-                iLoc = this.gl.getUniformLocation(this.shader.program, iName);
+        var uLoc = 0,
+            uName = "",
+            uType = "",
+            uVal = 0;
+
+        if (this.uniformsBlock.length > 0) {
+            for (uName in this.uniformsBlock) {
+                uType = this.uniformsBlock[uName].type;
+                uVal = this.uniformsBlock[uName].val;
+                uLoc = this.gl.getUniformLocation(this.shader.program, uName);
 
                 //if (iLoc != null) {this.uniforms[i] = {loc:iLoc, type:iType}}
                 //else {console.log("location of uniform not found: " + iName); return this;}
 
-                switch(iType) {
-                    case "1f":		{this.gl.uniform1f(iLoc, iVal); break;}
-                    case "2fv": 	{this.gl.uniform2fv(iLoc, new Float32Array(iVal)); break;}
-                    case "3fv": 	{this.gl.uniform3fv(iLoc, new Float32Array(iVal)); break;}
-                    case "4fv": 	{this.gl.uniform4fv(iLoc, new Float32Array(iVal)); break;}
-                    case "mat3": 	{this.gl.uniformMatrix3fv(iLoc, false, iVal); break;}
-                    case "mat4": 	{this.gl.uniformMatrix4fv(iLoc, false, iVal); break;}
-                    default: 		{console.log("unknown uniform type for " + iName + ": " + iType);}
+                switch(uType) {
+                    case "1f":		{this.gl.uniform1f(uLoc, uVal); break;}
+                    case "2fv": 	{this.gl.uniform2fv(uLoc, new Float32Array(uVal)); break;}
+                    case "3fv": 	{this.gl.uniform3fv(uLoc, new Float32Array(uVal)); break;}
+                    case "4fv": 	{this.gl.uniform4fv(uLoc, new Float32Array(uVal)); break;}
+                    case "mat3": 	{this.gl.uniformMatrix3fv(uLoc, false, uVal); break;}
+                    case "mat4": 	{this.gl.uniformMatrix4fv(uLoc, false, uVal); break;}
+                    default: 		{console.log("unknown uniform type for " + uName + ": " + uType);}
                 }
             }
         }
         return this;
     }
+
+	// takes in an argument texturesArr which is an array of doubles each representing one texture
+	// ex: [[uniformName, cacheTextureName]]
+	createTextures(texturesArr) {
+		var iLoc = 0,
+			iTex = "";
+		var texSlot;
+		if (texturesArr.length > 0) {
+			for (var i=0; i<texturesArr.length; i++) {
+				iTex = this.gl.mTextureCache[texturesArr[i][1]];
+				if (iTex === undefined) {console.log("Texture not found in cache: " + texturesArr[i][1]); return this;}
+	
+				iLoc = gl.getUniformLocation(this.shader.program, texturesArr[i][0]);
+				if (iLoc != null) {this.mTextureList.push({loc:iLoc, tex:iTex});}
+	
+				texSlot = this.gl["TEXTURE" + i];
+				this.gl.activeTexture(texSlot);
+				this.gl.bindTexture(this.gl.TEXTURE_2D, iTex);
+				this.gl.uniform1i(iLoc, i);
+			}
+		}
+		return this;
+	}
+
+    activateShader(){ this.gl.useProgram(this.shader.program); return this; }
+	deactivateShader(){ this.gl.useProgram(null); return this; }
+
+	//function helps clean up resources when shader is no longer needed.
+	disposeProgram(){
+		//unbind the program if its currently active
+		if(this.gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
+		this.gl.deleteProgram(this.program);
+	}
+
 }
+
