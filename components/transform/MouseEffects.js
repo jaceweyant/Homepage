@@ -26,7 +26,7 @@ class MouseEffects {
 		this.p2 = new Vector3(0,0,1);
 
 		this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
-		this.canvas.addEventListener("onclick", this.handleClick.bind(this));
+		//this.canvas.addEventListener("onclick", this.handleClick.bind(this));
 
 		//Simulate deceleration and update rotation
 		//setInterval(this.updateRotation.bind(this), 16);

@@ -16,7 +16,7 @@ class Renderer {
 		if(!material.useCulling) this.gl.disable(this.gl.CULL_FACE);
 		if(!material.useBlending) this.gl.enable(this.gl.BLEND);
 
-		if(model.mesh.indexCount) this.gl.drawElements(model.mesh.drawMode, model.mesh.indexCount, gl.UNSIGNED_SHORT, 0); 
+		if(model.mesh.indexCount) this.gl.drawElements(material.drawMode, model.mesh.indexCount, gl.UNSIGNED_SHORT, 0); 
 		else this.gl.drawArrays(material.drawMode, 0, model.mesh.vertexCount);
 
 		//Cleanup

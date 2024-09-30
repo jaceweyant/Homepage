@@ -27,7 +27,7 @@ class Transform{
 			.rotateX(this.rotation.x * Transform.deg2Rad)
 			.rotateZ(this.rotation.z * Transform.deg2Rad)
 			.rotateY(this.rotation.y * Transform.deg2Rad)
-			.rotateTo(this.rotationTo.p1, this.rotationTo.p2)
+			//.rotateTo(this.rotationTo.p1, this.rotationTo.p2)
 			.vscale(this.scale);
 
 		//Calcuate the Normal Matrix which doesn't need translate, then transpose and inverses the mat4 to mat3

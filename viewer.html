@@ -271,13 +271,13 @@
 				//................................
 				//Draw Out models
 				gIcosMaterial.activateShader().createUniforms(icosUniformsData);
-				gNameMaterial.activateShader().createUniforms(nameUniformsData);
+				//gNameMaterial.activateShader().createUniforms(nameUniformsData);
 
 
 				gRenderer = new Renderer(gl);
 				gRenderer.preRender()
-					.renderModel(gIcos, gIcosShader, true)
-					.renderModel(gName, gNameShader, true);
+					.renderModel(gIcos, gIcosMaterial, true)
+					//.renderModel(gName, gNameShader, true);
 				
 				/*
 				gIcosShader.activate()
