@@ -175,7 +175,7 @@
 				gIcosShader, gIcosMaterial, gIcos, 
 				gNameShader, gNameMaterial, gName, 
 				gCamera, gIcosCtrl, gLight;
-			var mDebug, mDebugLine;
+			var gRenderables, gRenderingObj;
 			var oUI;
 
 			var inCamPos, inModelScale;
@@ -213,15 +213,27 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				gIcosShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
-				gIcosMaterial = new Material(gl, gIcosShader, gl.TRIANGLES);
+				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", gIcosMaterial))
+					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
+					.updateViewMatrix();
 
-				gNameShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
-				gNameMaterial = new Material(gl, gNameShader, gl.TRIANGLES);
+				gIcosCtrl = new MouseEffects(gl, gIcos);
+
+				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", gNameMaterial))
+					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
+					.updateViewMatrix();
+
+
+
+				
 
 				//....................................
 				//Add UI Functionality
 				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gIcosCtrl);
+
+				gRenderables = [gIcos, gName];
+
+				gRenderingObj = {gl:gl, getUniforms:get_uniformsData, renderables:gRenderables, camera:gCamera, light:gLight};
 
 				//....................................
 				//Start Rendering
@@ -267,6 +279,15 @@
 
 				//................................
 				//Draw Out models
+
+				//gIcosMaterial.createUniforms(icosUniformsData);
+				//gNameMaterial.createUniforms(nameUniformsData);
+
+				console.log("icos material: " + gIcos.material);
+
+				Render(gRenderingObj);
+
+				/*
 				gIcosMaterial.activateShader().createUniforms(icosUniformsData);
 
 
@@ -279,6 +300,7 @@
 				gRenderer.preRender()
 					.renderModel(gName, gNameShader, true);
 				gNameMaterial.deactivateShader();
+				*/
 
 			}
 

@@ -5,7 +5,7 @@ class Model_OLD {
 		this.mesh = meshData;
 	}
 
-    //--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	//Getters/Setters
 	setScale(x,y,z){ this.transform.scale.set(x,y,z); return this; }
 	setPosition(x,y,z){ this.transform.position.set(x,y,z); return this; }
