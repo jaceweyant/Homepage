@@ -1,4 +1,4 @@
-class Model_OLD {
+class Model{
 	constructor(meshData){
 		this.transform = new Transform();
 		this.color = new Vector3(1,1,1);

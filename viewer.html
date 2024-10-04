@@ -154,6 +154,7 @@
 			<!--BUILD-->
 			<script src="components/build/ObjLoader.js"></script>
 			<script src="components/build/Primitives.js"></script>
+			<script src="components/build/Vao.js"></script>
 			<!--TRANSFORM-->
 			<script src="components/transform/Transform.js"></script>
 			<script src="components/transform/MouseEffects.js"></script>
@@ -193,19 +194,15 @@
 				//Load in Textures
 				//gl.fLoadTexture("tex001", document.getElementById("whiteImg"));
 				//gl.fLoadTexture("tex002", document.getElementById("orangeImg"));
+
+				gIcosShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gIcosMaterial = new Material(gl, gIcosShader, gl.TRIANGLES);
+
+				gNameShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gNameMaterial = new Material(gl, gNameShader, gl.TRIANGLES);
 				
 				//....................................
 				//Setup Model, Camera, Light, Shader
-				//gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
-				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
-				gIcos.setPosition(0,0,0).setScale(1,1,1).updateViewMatrix();
-				gIcos.setColor(1,1,1);
-
-				gIcosCtrl = new MouseEffects(gl, gIcos);
-
-				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true));
-				gName.setPosition(0,0,0).setScale(.6, .6, .6).transform.updateMatrix();
-				gName.setColor(0.8, 0.24, 0.0);
 
 				gCamera = new Camera(gl);
 				gCamera.setPosition(0, 0, 2);
@@ -213,19 +210,11 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", gIcosMaterial))
-					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
-					.updateViewMatrix();
+				gIcosShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gIcosMaterial = new Material(gl, gIcosShader, gl.TRIANGLES);
 
-				gIcosCtrl = new MouseEffects(gl, gIcos);
-
-				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", gNameMaterial))
-					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
-					.updateViewMatrix();
-
-
-
-				
+				gNameShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
+				gNameMaterial = new Material(gl, gNameShader, gl.TRIANGLES);
 
 				//....................................
 				//Add UI Functionality
@@ -244,7 +233,7 @@
 				//................................
 				//Main Elements to draw to the frame
 				gl.fClear();
-				//gl.fFitScreen(1,1);
+				gl.fFitScreen(1,1);
 				
 				gIcosCtrl.updateRotation();
 				gIcos.updateViewMatrix();
