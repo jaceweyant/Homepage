@@ -1,11 +1,61 @@
-class Model_OLD {
-	constructor(meshData){
-		this.transform = new Transform();
-		this.color = new Vector3(1,1,1);
-		this.mesh = meshData;
+class Model {
+    constructor() {
+		this.gl =  null;
+        this.transform = new Transform();
+        this.vao = null;
+        this.visible = true;
+        this.material = null;
+        this.color = new Vector3();
+    }
+
+	static create(gl, vao, material) {
+		var model = new Model();
+		model.gl = gl;
+        model.vao = vao;
+        model.material = material;
+
+		return model;
 	}
 
-	//--------------------------------------------------------------------------
+    draw() {
+        if(this.vao.isIndexed)	gl.drawElements(this.material.drawMode, this.vao.count, gl.UNSIGNED_SHORT, 0); 
+        else					gl.drawArrays(this.material.drawMode, 0, this.vao.count);
+    }
+
+	// Takes in one argument which is an array of triples which each represent one uniform and its neccessary info
+	// ex: [["uName1", "1fv", val1], ["uName2", "3fv", val2]]
+	updateUniforms(uniformsArr) {
+		//if (!uniformsArr.isArray) {console.log("argument needs to be an array"); return this;}
+
+		var iLoc = 0,
+			iName = "",
+			iType = "",
+			iVal = 0;
+		if (uniformsArr.length > 0) {
+			for (var i=0; i<uniformsArr.length; i++) {
+				iName = uniformsArr[i][0];
+				iType = uniformsArr[i][1];
+				iVal = uniformsArr[i][2];
+
+				iLoc = gl.getUniformLocation(this.material.shader.program, iName);
+				//if (iLoc != null) {this.mUniformList[i] = {loc:iLoc, type:iType}}
+				//else {console.log("location of uniform not found: " + iName); return this;}
+
+				switch(iType) {
+					case "1f":		{this.gl.uniform1f(iLoc, iVal); break;}
+					case "2fv": 	{this.gl.uniform2fv(iLoc, new Float32Array(iVal)); break;}
+					case "3fv": 	{this.gl.uniform3fv(iLoc, new Float32Array(iVal)); break;}
+					case "4fv": 	{this.gl.uniform4fv(iLoc, new Float32Array(iVal)); break;}
+					case "mat3": 	{this.gl.uniformMatrix3fv(iLoc, false, iVal); break;}
+					case "mat4": 	{this.gl.uniformMatrix4fv(iLoc, false, iVal); break;}
+					default: 		{console.log("unknown uniform type for " + iName + ": " + iType);}
+				}
+			}
+		}
+		return this;
+	}
+
+    //--------------------------------------------------------------------------
 	//Getters/Setters
 	setScale(x,y,z){ this.transform.scale.set(x,y,z); return this; }
 	setPosition(x,y,z){ this.transform.position.set(x,y,z); return this; }

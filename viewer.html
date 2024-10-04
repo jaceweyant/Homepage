@@ -148,7 +148,7 @@
 		<!--GL CONTEXT SETUP-->
 		<script src="gl.js"></script>
 		<!--COMPONENTS-->
-		<script src="components/Model2.js"></script>
+		<script src="components/Model.js"></script>
 		<script src="components/Camera.js"></script>
 		<script src="components/Light.js"></script>
 			<!--BUILD-->
@@ -176,7 +176,7 @@
 				gIcosShader, gIcosMaterial, gIcos, 
 				gNameShader, gNameMaterial, gName, 
 				gCamera, gIcosCtrl, gLight;
-			var mDebug, mDebugLine;
+			var gRenderables, gRenderingObj;
 			var oUI;
 
 			var inCamPos, inModelScale;
@@ -210,23 +210,39 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", gIcosMaterial))
+				gIcos = Model.create(gl, ObjLoader.domToMesh("objIcos", "icosObj_file"), gIcosMaterial)
 					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
 					.updateViewMatrix();
 
 				gIcosCtrl = new MouseEffects(gl, gIcos);
 
-				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", gNameMaterial))
+				gName = Model.create(gl, ObjLoader.domToMesh("objName", "nameObj_file"), gNameMaterial)
 					.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
 					.updateViewMatrix();
 
-
-
+				//.....................................
+				var get_uniformsData = function(components) {
+					var gModel = components.model,
+						gCamera = components.camera,
+						gLight = components.light;
+					return 	[["uMVMatrix", "mat4", gModel.transform.getViewMatrix()],
+							 ["uPMatrix", "mat4", gCamera.projectionMatrix],
+							 ["uCameraMatrix", "mat4", gCamera.viewMatrix],
+							 ["uNormMatrix", "mat3", gModel.transform.getNormalMatrix()],
+					 		 ["uCamPos", "3fv", gCamera.transform.position.getArray()],
+							 ["uLightPos", "3fv", gLight.transform.position.getArray()],
+							 ["uBaseColor", "3fv", gIcos.color.getArray()],
+							 ["uLightIntensity", "1f", gLight.intensity]];
+				};
 				
 
 				//....................................
 				//Add UI Functionality
 				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gIcosCtrl);
+
+				gRenderables = [gIcos, gName];
+
+				gRenderingObj = {gl:gl, getUniforms:get_uniformsData, renderables:gRenderables, camera:gCamera, light:gLight};
 
 				//....................................
 				//Start Rendering
@@ -272,6 +288,15 @@
 
 				//................................
 				//Draw Out models
+
+				//gIcosMaterial.createUniforms(icosUniformsData);
+				//gNameMaterial.createUniforms(nameUniformsData);
+
+				console.log("icos material: " + gIcos.material);
+
+				Render(gRenderingObj);
+
+				/*
 				gIcosMaterial.activateShader().createUniforms(icosUniformsData);
 
 
@@ -284,6 +309,7 @@
 				gRenderer.preRender()
 					.renderModel(gName, gNameShader, true);
 				gNameMaterial.deactivateShader();
+				*/
 
 			}
 
