@@ -13,6 +13,11 @@ class Material {
         this.drawMode = drawMode || gl.TRIANGLES;
     }
 
+	static create(gl, name, shader, drawMode) {
+		var mat = new Material(gl, name, shader, drawMode);
+		return mat;
+	}
+
         //---------------------------------------------------
 	// Create the Uniforms/Textures
 	//---------------------------------------------------
