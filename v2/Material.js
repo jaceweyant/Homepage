@@ -8,7 +8,7 @@ class Material {
         this.useCulling = gl.CULLING_STATE;
         this.useBlending = gl.BLENDING_STATE;
         this.useModelMatrix = true;
-        this.useNormalMatrix = false;
+        this.useNormalMatrix = true;
 
         this.drawMode = drawMode || gl.TRIANGLES;
     }
@@ -32,7 +32,7 @@ class Material {
 				iVal = uniformsArr[i][2];
 
 				iLoc = gl.getUniformLocation(this.shader.program, iName);
-				//if (iLoc != null) {this.mUniformList[i] = {loc:iLoc, type:iType}}
+				if (iLoc == null) {console.log("location of uniform not found: " + iName); return this;}
 				//else {console.log("location of uniform not found: " + iName); return this;}
 
 				switch(iType) {

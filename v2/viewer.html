@@ -211,11 +211,12 @@
 				//....................................
 				//Create Shaders and Materials
 
-				gMainShader = Shader.create(gl, "vertex_shader", "fragment_shader", false);
+				//gMainShader = Shader.create(gl, "vertex_shader", "fragment_shader", false);
+				gMainShader = new Shader(gl, "vertex_shader", "fragment_shader", false);
 
 
-				gIcosMat = new Material(gl, "icosMat", Shader.create(gl, "vertex_shader", "fragment_shader", false), gl.TRIANGLES);
-				gNameMat = new Material(gl, "nameMat", Shader.create(gl, "vertex_shader", "fragment_shader", false), gl.TRIANGLES);
+				gIcosMat = new Material(gl, "icosMat", gMainShader, gl.TRIANGLES);
+				gNameMat = new Material(gl, "nameMat", gMainShader, gl.TRIANGLES);
 				
 				//....................................
 				//Setup Model, Camera, Light, Shader
@@ -223,13 +224,14 @@
 				//gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
 				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true), gIcosMat);
 				gIcos.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1).updateViewMatrix();
-				gMouseCtrl = new MouseEffects(gl, gIcos);
+				
 
 				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true), gNameMat);
 				gName.setPosition(0,0,0).setScale(.6, .6, .6).setColor(0.8, 0.24, 0.0).updateViewMatrix();
 					
-				gCamera = new Camera(gl);
-				gCamera.setPosition(0, 0, 2);
+				gCamera = new Camera(gl, 80);
+				gCamera.setPosition(0, 0, 0);
+				gMouseCtrl = new MouseEffects(gl, gCamera);
 
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
@@ -257,10 +259,7 @@
 				gLight.updateViewMatrix();
 				gMouseCtrl.updateRotation();
 
-
-				//render([gIcos]);
-				render([gIcos]);
-
+				Render([gIcos, gName]);
 			}
 
 		</script>

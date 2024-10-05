@@ -20,7 +20,7 @@ class UI {
         });
 
         document.getElementById("cam-fov").addEventListener("change", (e) => {
-            this.camera.fov = parseFloat(e.target.value);
+            this.camera.fov = parseFloat(e.target.value); 
         });
 
         // LIGHT

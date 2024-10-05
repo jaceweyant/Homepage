@@ -116,64 +116,6 @@ class ShaderBuilder {
 	}
 }
 
-//##################################################################
-// OLD SHADER BUILDER
-//##################################################################
-class Shader{
-	constructor(gl,vertShaderSrc,fragShaderSrc){
-		this.program = ShaderUtil.createProgramFromText(gl,vertShaderSrc,fragShaderSrc,true);
-
-		if(this.program != null){
-			this.gl = gl;
-			gl.useProgram(this.program);
-			this.attribLoc = ShaderUtil.getStandardAttribLocations(gl,this.program);
-			this.uniformLoc = ShaderUtil.getStandardUniformLocations(gl,this.program);
-		}
-
-		//Note :: Extended shaders should deactivate shader when done calling super and setting up custom parts in the constructor.
-	}
-
-	//...................................................
-	//Methods
-	activate(){ this.gl.useProgram(this.program); return this; }
-	deactivate(){ this.gl.useProgram(null); return this; }
-
-	setPerspective(matData){	this.gl.uniformMatrix4fv(this.uniformLoc.perspective, false, matData); return this; }
-	setModelMatrix(matData){	this.gl.uniformMatrix4fv(this.uniformLoc.ModelMatrix, false, matData); return this; }
-	setCameraMatrix(matData){	this.gl.uniformMatrix4fv(this.uniformLoc.cameraMatrix, false, matData); return this; }
-
-	//function helps clean up resources when shader is no longer needed.
-	dispose(){
-		//unbind the program if its currently active
-		if(this.gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
-		this.gl.deleteProgram(this.program);
-	}
-
-	//...................................................
-	//RENDER RELATED METHODS
-
-	//Setup custom properties
-	preRender(){} //abstract method, extended object may need need to do some things before rendering.
-
-	//Handle rendering a Model
-	renderModel(Model){
-		this.setModelMatrix(Model.transform.getViewMatrix());	//Set the transform, so the shader knows where the Model exists in 3d space
-		this.gl.bindVertexArray(Model.mesh.vao);				//Enable VAO, this will set all the predefined attributes for the shader
-
-		if(Model.mesh.noCulling) this.gl.disable(this.gl.CULL_FACE);
-		if(Model.mesh.doBlending) this.gl.enable(this.gl.BLEND);
-
-		if(Model.mesh.indexCount) this.gl.drawElements(Model.mesh.drawMode, Model.mesh.indexCount, gl.UNSIGNED_SHORT, 0); 
-		else this.gl.drawArrays(Model.mesh.drawMode, 0, Model.mesh.vertexCount);
-
-		//Cleanup
-		this.gl.bindVertexArray(null);
-		if(Model.mesh.noCulling) this.gl.enable(this.gl.CULL_FACE);
-		if(Model.mesh.doBlending) this.gl.disable(this.gl.BLEND);
-
-		return this;
-	}
-}
 
 //##################################################################
 // SHADER UTILITIES
