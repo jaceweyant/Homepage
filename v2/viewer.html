@@ -146,6 +146,7 @@
 
 		<script src="Math.js"></script>
 		<script src="Transform.js"></script>
+		<script src="Vao.js"></script>
 		<script src="ObjLoader.js"></script>
 		<script src="MouseEffects.js"></script>
 
@@ -220,14 +221,13 @@
 
 				//gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
 				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true), gIcosMat)
-					.setPosition(0,0,0).setScale(1,1,1).updateViewMatrix()
-					.setColor(1,1,1);
+				gIcos.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1).updateViewMatrix();
 
 				gMouseCtrl = new MouseEffects(gl, gIcos);
 
 				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true), gNameMat)
-					.setPosition(0,0,0).setScale(.6, .6, .6).transform.updateMatrix()
-					.setColor(0.8, 0.24, 0.0);
+				gName.setPosition(0,0,0).setScale(.6, .6, .6).setColor(0.8, 0.24, 0.0).updateViewMatrix();
+					
 
 				gCamera = new Camera(gl);
 				gCamera.setPosition(0, 0, 2);
@@ -259,7 +259,7 @@
 				gMouseCtrl.updateRotation();
 
 
-				Render([gIcos, gName]);
+				render([gIcos, gName]);
 
 				//................................
 				//Draw Out models

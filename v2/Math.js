@@ -290,7 +290,6 @@ class Matrix4{
 	}
 
 	static axisangleMat4(n,rad) {
-		console.log(rad);
 		var c = Math.cos(rad),
 			s = Math.sin(rad),
 			t = 1 - c,

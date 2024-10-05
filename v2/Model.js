@@ -4,6 +4,7 @@ class Model{
 		this.color = new Vector3(1,1,1);
 		this.mesh = meshData;
 		this.material = material;
+		this.visible = false;
 	}
 
 	applyMaterial(material) {this.material = material; return this;}
