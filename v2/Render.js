@@ -47,7 +47,7 @@ var render = function(ary) {
         //Check if the next material to use is different from the last
         if (material !== ary[i].material) {
 
-            console.log("in render material ");
+            //console.log("in render material ");
 
             material = ary[i].material;
 
@@ -66,8 +66,8 @@ var render = function(ary) {
         //if (material.useModelMatrix) material.shader.setUniforms("", ary[i].updateMatrix());
 
         //Render 
-        if (ary[i].mesh.vao.isIndexed)  {console.log("vao is indexed"); material.gl.drawElements(material.drawMode, ary[i].mesh.vao.count, gl.UNSIGNED_SHORT, 0);}
-        else                       {console.log("vao is not indexed"); material.gl.drawArrays(material.drawMode, 0, ary[i].mesh.count);}
+        if (ary[i].mesh.vao.isIndexed)  {console.log("vao is indexed"); material.gl.drawElements(material.drawMode, ary[i].mesh.vertexCount, gl.UNSIGNED_SHORT, 0);}
+        else                            {console.log("vao is not indexed"); material.gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
 
     }
 
