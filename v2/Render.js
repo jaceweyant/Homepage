@@ -66,8 +66,8 @@ var render = function(ary) {
         //if (material.useModelMatrix) material.shader.setUniforms("", ary[i].updateMatrix());
 
         //Render 
-        if (ary[i].mesh.vao.isIndexed)  {console.log("vao is indexed"); material.gl.drawElements(material.drawMode, ary[i].mesh.vertexCount, gl.UNSIGNED_SHORT, 0);}
-        else                            {console.log("vao is not indexed"); material.gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
+        if (ary[i].mesh.vao.isIndexed)  {material.gl.drawElements(material.drawMode, ary[i].mesh.vertexCount, gl.UNSIGNED_SHORT, 0);}
+        else                            {material.gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
 
     }
 
