@@ -1,7 +1,13 @@
-var Render = function(gl, ary) {
-    var material = shader = null
+var Render = function(gl, ary, camera, light) {
+
+    camera.updateViewMatrix();
+    light.updateViewMatrix();
+
+    var material = shader = null;
 
     for (var i=0; i<ary.length; i++) {
+
+        ary[0].updateMouseCtrl().updateViewMatrix().applyUniforms();
 
         //if (!ary[i].visible) {console.log("in render"); continue;}
         //Check if the next material to use is different from the last
@@ -29,8 +35,10 @@ var Render = function(gl, ary) {
         if (ary[i].mesh.vao.isIndexed)  {gl.drawElements(material.drawMode, ary[i].mesh.indexCount, gl.UNSIGNED_SHORT, 0);}
         else                            {gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
 
+        //Cleanup
+        gl.bindVertexArray(null);
+
     }
 
-    //Cleanup
-    gl.bindVertexArray(null);
+
 }

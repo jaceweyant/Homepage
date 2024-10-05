@@ -33,6 +33,11 @@ class MouseEffects {
 
 	}
 
+	static create(gl, object) {
+		var fx = new MouseEffects(gl, object);
+		return fx;
+	}
+
 	handleMouseMove(e) {
 		this.initX = e.pageX - this.offsetX;
 		this.initY = e.pageY - this.offsetY;

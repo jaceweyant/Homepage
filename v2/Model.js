@@ -5,11 +5,21 @@ class Model{
 		this.color = new Vector3(1,1,1);
 		this.mesh = meshData;
 		this.material = material;
+		this.get_uniforms = null;
 		this.visible = false;
 	}
 
 	applyMaterial(material) {this.material = material; return this;}
 
+	setUniformsGetter(get_uniforms) {this.get_uniforms = get_uniforms; return this;}
+
+	applyUniforms() {this.material.uniforms = this.get_uniforms(); this.material.createUniforms(); return this;}
+
+	applyMouseCtrl(gl) {this.mouseCtrl = MouseEffects.create(gl, this); return this;}
+
+	updateMouseCtrl() {if (this.mouseCtrl != null) {this.mouseCtrl.updateRotation();} return this;}
+
+	//DEPRECIATED
 	updateUniforms(uniformsAry) {
 		if (uniformsAry != null) {
 			this.material.uniforms = uniformsAry;

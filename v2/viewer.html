@@ -215,15 +215,14 @@
 				gIcosMat = new Material(gl, "icosMat", gMainShader, gl.TRIANGLES);
 				gNameMat = new Material(gl, "nameMat", gMainShader, gl.TRIANGLES);
 				
-				/*
-				console.log("DEBUGING AFTER MATERIALS SETUP: line 217");
-				Debug.Materials.areSame(gIcosMat, gNameMat)
-							   .haveSameShader(gIcosMat, gNameMat)
-							   .haveSameShaderProgram(gIcosMat, gNameMat);
-				*/
+					// DEBUGGING
+					/*
+					console.log("DEBUGING AFTER MATERIALS SETUP: line 217");
+					Debug.Materials.areSame(gIcosMat, gNameMat)
+								.haveSameShader(gIcosMat, gNameMat)
+								.haveSameShaderProgram(gIcosMat, gNameMat);
+					*/
 							   
-				
-
 				//....................................
 				//Setup Model, Camera, Light, Shader
 
@@ -233,61 +232,22 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				//gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true), 
-				//				  Material.create(gl, "icosMat", gMainShader, gl.TRIANGLES));
 				gIcos = new Model("IcosModel", ObjLoader.domToMesh("objIcos", "icosObj_file", true, true), gIcosMat);
 				gIcos.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
-					 .updateViewMatrix().updateUniforms(gIcosUniforms());
-				gMouseCtrl = new MouseEffects(gl, gIcos);
+					 .applyMouseCtrl(gl)
+					 .updateViewMatrix()//.updateUniforms(gIcosUniforms())
+					 .setUniformsGetter(gIcosUniforms).applyUniforms();
+				//gMouseCtrl = new MouseEffects(gl, gIcos);
 				
-
-				//gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true), 
-				//				  Material.create(gl, "nameMat", gMainShader, gl.TRIANGLES));
 				gName = new Model("NameModel", ObjLoader.domToMesh("objName", "nameObj_file", true, true), gNameMat);
 				gName.setPosition(0,0,0).setScale(.6, .6, .6).setColor(0.8, 0.24, 0.0)
-					 .updateViewMatrix().updateUniforms(gNameUniforms());
+					 .updateViewMatrix()//.updateUniforms(gNameUniforms());
+					 .setUniformsGetter(gNameUniforms).applyUniforms();
 				
-				console.log("DEBUGING AFTER MODELS SETUP: line 246");
-				Debug.Models.doesExist(gIcos).doesExist(gName)
-							.isVisible(gIcos).isVisible(gName)
-							.hasMaterial(gIcos).hasMaterial(gName)
-							.hasUniforms(gIcos).hasUniforms(gName)
-							.checkUniforms(gIcos).checkUniforms(gName)
-							.checkShader(gIcos).checkShader(gName)
-							.areSame(gIcos, gName)
-							.haveSameMaterial(gIcos, gName)
-							.haveSameShader(gIcos, gName)
-							.haveSameShaderProgram(gIcos, gName)
-							.haveSameUniforms(gIcos, gName);
-				console.log("");
 
-
-
-				//....................................
-				//Add UI Functionality
-				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gMouseCtrl);
-
-				//....................................
-				//Start Rendering
-				renderIndex = 0;
-				gRLoop = new RenderLoop(onRender,30).start();
-				setTimeout(function() {
-					gRLoop.stop();
-				}, 1000);
-			});
-
-			function onRender(dt){
-				//................................
-				//Main Elements to draw to the frame
-				gl.fClear();
-				gl.fFitScreen(1,1);
-				
-				gMouseCtrl.updateRotation();
-				gIcos.updateViewMatrix().updateUniforms(gIcosUniforms());
-				gName.updateViewMatrix().updateUniforms(gNameUniforms());
-
-				if (renderIndex == 0) {
-					console.log("DEBUGING IN onRender(), AFTER updateUniforms(), BEFORE Render(): line 280");
+					// DEBUGGING
+					/*
+					console.log("DEBUGING AFTER MODELS SETUP: line 246");
 					Debug.Models.doesExist(gIcos).doesExist(gName)
 								.isVisible(gIcos).isVisible(gName)
 								.hasMaterial(gIcos).hasMaterial(gName)
@@ -300,16 +260,42 @@
 								.haveSameShaderProgram(gIcos, gName)
 								.haveSameUniforms(gIcos, gName);
 					console.log("");
-				}
-				renderIndex += 1;
+					*/
 
+
+
+				//....................................
+				//Add UI Functionality
+				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gMouseCtrl);
+
+				//....................................
+				//Start Rendering
+				renderIndex = 0;
+				gRLoop = new RenderLoop(onRender,30).start();
+				//setTimeout(function() {gRLoop.stop();}, 1000);
+			});
+
+			function onRender(dt){
+				//................................
+				//Main Elements to draw to the frame
+				gl.fClear();
+				gl.fFitScreen(1,1);
 				
+				//gMouseCtrl.updateRotation();
 
-				gCamera.updateViewMatrix();
-				gLight.updateViewMatrix();
-				
+				// DEBUGGING
+				/*
+				console.log("DEBUGING IN onRender(), AFTER updateUniforms(), BEFORE Render(): line 280");
+				Debug.Models.isVisible(gIcos).isVisible(gName)
+							.checkUniforms(gIcos).checkUniforms(gName)
+							.checkShader(gIcos).checkShader(gName)
+							.areSame(gIcos, gName)
+							.haveSameMaterial(gIcos, gName)
+							.haveSameShader(gIcos, gName)
+							.haveSameUniforms(gIcos, gName);
+				*/
 
-				Render(gl, [gIcos]);
+				Render(gl, [gIcos, gName], gCamera, gLight);
 			}
 
 		</script>
