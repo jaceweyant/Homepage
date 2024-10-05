@@ -1,8 +1,8 @@
 class Material {
 
-    constructor(gl, shader, drawMode, useModelMatrix, useNormalMatrix) {
+    constructor(gl, name, shader, drawMode, useModelMatrix, useNormalMatrix) {
         this.gl = gl;
-        //this.name = name;
+        this.name = name;
         this.shader = shader;
 
         this.useCulling = gl.CULLING_STATE;

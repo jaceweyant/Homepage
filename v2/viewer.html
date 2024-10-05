@@ -142,19 +142,30 @@
 		</div>
 
 		<script src="gl.js"></script>
-		<script src="Math.js"></script>
-		<script src="Shaders.js"></script>
-		<script src="RenderLoop.js"></script>
-		<script src="Transform.js"></script>
-		<script src="Model.js"></script>
-		<script src="Camera.js"></script>
-		<script src="MouseEffects.js"></script>
-		<script src="ObjLoader.js"></script>
-		<script src="Light.js"></script>
 		<script src="UI.js"></script>
 
+		<script src="Math.js"></script>
+		<script src="Transform.js"></script>
+		<script src="ObjLoader.js"></script>
+		<script src="MouseEffects.js"></script>
+
+		<script src="Model.js"></script>
+		<script src="Material.js"></script>
+		<script src="Shader.js"></script>
+		<!--<script src="Shaders.js"></script>-->
+
+		<script src="Camera.js"></script>
+		<script src="Light.js"></script>
+
+		<script src="RenderLoop.js"></script>
+		<script src="Render.js"></script>
+
 		<script>
-			var gl, gRLoop,	gIcosShader, gIcos, gNameShader, gName, gCamera, gIcosCtrl, gLight;
+			var gl, gRLoop,
+				gIcos, gIcosUniforms, gIcosMat,
+				gName, gNameUniforms, gNameMat,
+				gMainShader,
+				gCamera, gLight, gMouseCtrl;
 			var mDebug, mDebugLine;
 			var oUI;
 
@@ -173,19 +184,50 @@
 				//Load in Textures
 				//gl.fLoadTexture("tex001", document.getElementById("whiteImg"));
 				//gl.fLoadTexture("tex002", document.getElementById("orangeImg"));
+
+				gIcosUniforms = function() { return [
+					["uMVMatrix", "mat4", gIcos.transform.getViewMatrix()],
+					["uPMatrix", "mat4", gCamera.projectionMatrix],
+					["uCameraMatrix", "mat4", gCamera.viewMatrix],
+					["uNormMatrix", "mat3", gIcos.transform.getNormalMatrix()],
+					["uCamPos", "3fv", gCamera.transform.position.getArray()],
+					["uLightPos", "3fv", gLight.transform.position.getArray()],
+					["uBaseColor", "3fv", gIcos.color.getArray()],
+					["uLightIntensity", "1f", gLight.intensity]
+				]};
+
+				gNameUniforms = function() { return [
+					["uMVMatrix", "mat4", gName.transform.getViewMatrix()],
+					["uPMatrix", "mat4", gCamera.projectionMatrix],
+					["uCameraMatrix", "mat4", gCamera.viewMatrix],
+					["uNormMatrix", "mat3", gName.transform.getNormalMatrix()],
+					["uCamPos", "3fv", gCamera.transform.position.getArray()],
+					["uLightPos", "3fv", gLight.transform.position.getArray()],
+					["uBaseColor", "3fv", gName.color.getArray()],
+					["uLightIntensity", "1f", gLight.intensity]
+				]};
+
+				//....................................
+				//Create Shaders and Materials
+
+				gMainShader = Shader.create(gl, "vertex_shader", "fragment_shader", false);
+
+				gIcosMat = new Material(gl, "icosMat", gMainShader, gl.TRIANGLES);
+				gNameMat = new Material(gl, "nameMat", gMainShader, gl.TRIANGLES);
 				
 				//....................................
 				//Setup Model, Camera, Light, Shader
+
 				//gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
-				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true));
-				gIcos.setPosition(0,0,0).setScale(1,1,1).updateViewMatrix();
-				gIcos.setColor(1,1,1);
+				gIcos = new Model(ObjLoader.domToMesh("objIcos", "icosObj_file", true, true), gIcosMat)
+					.setPosition(0,0,0).setScale(1,1,1).updateViewMatrix()
+					.setColor(1,1,1);
 
-				gIcosCtrl = new MouseEffects(gl, gIcos);
+				gMouseCtrl = new MouseEffects(gl, gIcos);
 
-				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true));
-				gName.setPosition(0,0,0).setScale(.6, .6, .6).transform.updateMatrix();
-				gName.setColor(0.8, 0.24, 0.0);
+				gName = new Model(ObjLoader.domToMesh("objName", "nameObj_file", true, true), gNameMat)
+					.setPosition(0,0,0).setScale(.6, .6, .6).transform.updateMatrix()
+					.setColor(0.8, 0.24, 0.0);
 
 				gCamera = new Camera(gl);
 				gCamera.setPosition(0, 0, 2);
@@ -193,12 +235,10 @@
 				gLight = new Light(gl);
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
-				gIcosShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
-				gNameShader = new ShaderBuilder(gl, "vertex_shader", "fragment_shader", false);
 
 				//....................................
 				//Add UI Functionality
-				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gIcosCtrl);
+				oUI = new UI(gl, gCamera, gLight, gIcos, gName, gMouseCtrl);
 
 				//....................................
 				//Start Rendering
@@ -211,39 +251,19 @@
 				gl.fClear();
 				//gl.fFitScreen(1,1);
 				
-				gIcosCtrl.updateRotation();
-				gIcos.updateViewMatrix();
+				gIcos.updateViewMatrix().updateUniforms(gIcosUniforms);
+				gName.updateViewMatrix().updateUniforms(gNameUniforms);
+
 				gCamera.updateViewMatrix();
 				gLight.updateViewMatrix();
+				gMouseCtrl.updateRotation();
 
-				//................................
-				//Create Uniform Data Array
-				var icosUniformsData = [
-					["uMVMatrix", "mat4", gIcos.transform.getViewMatrix()],
-					["uPMatrix", "mat4", gCamera.projectionMatrix],
-					["uCameraMatrix", "mat4", gCamera.viewMatrix],
-					["uNormMatrix", "mat3", gIcos.transform.getNormalMatrix()],
-					["uCamPos", "3fv", gCamera.transform.position.getArray()],
-					["uLightPos", "3fv", gLight.transform.position.getArray()],
-					["uBaseColor", "3fv", gIcos.color.getArray()],
-					["uLightIntensity", "1f", gLight.intensity]
-				];
 
-				//var icosTexturesData = [["uTexture", "tex001"]];
-
-				var nameUniformsData = [
-					["uMVMatrix", "mat4", gName.transform.getViewMatrix()],
-					["uPMatrix", "mat4", gCamera.projectionMatrix],
-					["uCameraMatrix", "mat4", gCamera.viewMatrix],
-					["uNormMatrix", "mat3", gName.transform.getNormalMatrix()],
-					["uCamPos", "3fv", gCamera.transform.position.getArray()],
-					["uLightPos", "3fv", gLight.transform.position.getArray()],
-					["uBaseColor", "3fv", gName.color.getArray()],
-					["uLightIntensity", "1f", gLight.intensity]
-				];
+				Render([gIcos, gName]);
 
 				//................................
 				//Draw Out models
+				/*
 				gIcosShader.activate()
 					.createUniforms(icosUniformsData)
 					.createTextures([["uTexture", "tex001"]])
@@ -252,6 +272,9 @@
 					.createUniforms(nameUniformsData)
 					.createTextures([["uTexture", "tex002"]])
 					.renderModel(gName);
+				*/
+
+
 			}
 
 		</script>

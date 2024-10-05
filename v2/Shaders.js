@@ -16,6 +16,8 @@ class ShaderBuilder {
 			this.doBlending = false;
 		} else {console.log("program not found");}
 	}
+
+
 	//---------------------------------------------------
 	// Create the Uniforms/Textures
 	//---------------------------------------------------
