@@ -1,4 +1,4 @@
-class Transform{
+class Transform {
 	constructor(){
 		//transform vectors
 		this.position	= new Vector3(0,0,0);	//Traditional X,Y,Z 3d position
