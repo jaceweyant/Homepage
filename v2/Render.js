@@ -1,4 +1,4 @@
-var Render = function(ary) {
+var Render = function(gl, ary) {
     var material = shader = null
 
     for (var i=0; i<ary.length; i++) {
@@ -26,8 +26,8 @@ var Render = function(ary) {
         //if (material.useModelMatrix) material.shader.setUniforms("", ary[i].updateMatrix());
 
         //Render 
-        if (ary[i].mesh.vao.isIndexed)  {console.log("indexed"); material.gl.drawElements(material.drawMode, ary[i].mesh.indexCount, gl.UNSIGNED_SHORT, 0);}
-        else                            {material.gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
+        if (ary[i].mesh.vao.isIndexed)  {gl.drawElements(material.drawMode, ary[i].mesh.indexCount, gl.UNSIGNED_SHORT, 0);}
+        else                            {gl.drawArrays(material.drawMode, 0, ary[i].mesh.vertexCount);}
 
     }
 

@@ -1,21 +1,8 @@
 class Model{
-	constructor(name, meshData, material){
-		this.name = name;
+	constructor(meshData){
 		this.transform = new Transform();
 		this.color = new Vector3(1,1,1);
 		this.mesh = meshData;
-		this.material = material;
-		this.visible = false;
-	}
-
-	applyMaterial(material) {this.material = material; return this;}
-
-	updateUniforms(uniformsAry) {
-		if (uniformsAry != null) {
-			this.material.uniforms = uniformsAry;
-			this.material.createUniforms();
-			return this;
-		}
 	}
 
 	//--------------------------------------------------------------------------

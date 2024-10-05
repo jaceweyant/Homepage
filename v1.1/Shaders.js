@@ -1,7 +1,7 @@
 //##################################################################
 // NEW SHADER BUILDER
 //##################################################################
-class Shader {
+class ShaderBuilder {
 	constructor(gl, vertShader, fragShader, isText) {
 		if (!isText) {this.program = ShaderUtil.domShaderProgram(gl, vertShader, fragShader, true);}
 		else		 {this.program = ShaderUtil.createProgramFromText(gl, vertShader, fragShader, true);}
@@ -9,17 +9,72 @@ class Shader {
 		if (this.program != null) {
 			this.gl = gl;
 			gl.useProgram(this.program);
-
-			this.isActive = true;
+			this.mUniformList = [];
+			this.mTextureList = [];
 
 			this.noCulling = false;
 			this.doBlending = false;
 		} else {console.log("program not found");}
 	}
+	//---------------------------------------------------
+	// Create the Uniforms/Textures
+	//---------------------------------------------------
+	// Takes in one argument which is an array of triples which each represent one uniform and its neccessary info
+	// ex: [["uName1", "1fv", val1], ["uName2", "3fv", val2]]
+	createUniforms(uniformsArr) {
+		//if (!uniformsArr.isArray) {console.log("argument needs to be an array"); return this;}
 
-    static create(gl, vertShader, fragShader, isText) {
-        return new Shader(gl, vertShader, fragShader, isText);
+		var iLoc = 0,
+			iName = "",
+			iType = "",
+			iVal = 0;
+		if (uniformsArr.length > 0) {
+			for (var i=0; i<uniformsArr.length; i++) {
+				iName = uniformsArr[i][0];
+				iType = uniformsArr[i][1];
+				iVal = uniformsArr[i][2];
+
+				iLoc = gl.getUniformLocation(this.program, iName);
+				if (iLoc != null) {this.mUniformList[i] = {loc:iLoc, type:iType}}
+				else {console.log("location of uniform not found: " + iName); return this;}
+
+				switch(iType) {
+					case "1f":		{this.gl.uniform1f(iLoc, iVal); break;}
+					case "2fv": 	{this.gl.uniform2fv(iLoc, new Float32Array(iVal)); break;}
+					case "3fv": 	{this.gl.uniform3fv(iLoc, new Float32Array(iVal)); break;}
+					case "4fv": 	{this.gl.uniform4fv(iLoc, new Float32Array(iVal)); break;}
+					case "mat3": 	{this.gl.uniformMatrix3fv(iLoc, false, iVal); break;}
+					case "mat4": 	{this.gl.uniformMatrix4fv(iLoc, false, iVal); break;}
+					default: 		{console.log("unknown uniform type for " + iName + ": " + iType);}
+				}
+			}
+		}
+		return this;
 	}
+
+	// takes in an argument texturesArr which is an array of doubles each representing one texture
+	// ex: [[uniformName, cacheTextureName]]
+	createTextures(texturesArr) {
+		var iLoc = 0,
+			iTex = "";
+		var texSlot;
+		if (texturesArr.length > 0) {
+			for (var i=0; i<texturesArr.length; i++) {
+				iTex = this.gl.mTextureCache[texturesArr[i][1]];
+				if (iTex === undefined) {console.log("Texture not found in cache: " + texturesArr[i][1]); return this;}
+	
+				iLoc = gl.getUniformLocation(this.program, texturesArr[i][0]);
+				if (iLoc != null) {this.mTextureList.push({loc:iLoc, tex:iTex});}
+	
+				texSlot = this.gl["TEXTURE" + i];
+				this.gl.activeTexture(texSlot);
+				this.gl.bindTexture(this.gl.TEXTURE_2D, iTex);
+				this.gl.uniform1i(iLoc, i);
+			}
+		}
+		return this;
+	}
+
 	//---------------------------------------------------
 	// Methods
 	//---------------------------------------------------
@@ -32,7 +87,35 @@ class Shader {
 		if(this.gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
 		this.gl.deleteProgram(this.program);
 	}
+
+	//Setup custom properties
+	preRender(){
+		//abstract method, extended object may need need to do some things before rendering.
+		return this;
+	} 
+	
+	// Handle rendering a model
+	renderModel(model, doShaderClose) {
+
+		this.gl.bindVertexArray(model.mesh.vao);
+
+		if(model.mesh.noCulling || this.noCulling) this.gl.disable(this.gl.CULL_FACE);
+		if(model.mesh.doBlending || this.doBlending) this.gl.enable(this.gl.BLEND);
+
+		if(model.mesh.indexCount) this.gl.drawElements(model.mesh.drawMode, model.mesh.indexCount, gl.UNSIGNED_SHORT, 0); 
+		else this.gl.drawArrays(model.mesh.drawMode, 0, model.mesh.vertexCount);
+
+		//Cleanup
+		this.gl.bindVertexArray(null);
+		if(model.mesh.noCulling || this.noCulling) this.gl.enable(this.gl.CULL_FACE);
+		if(model.mesh.doBlending || this.doBlending) this.gl.disable(this.gl.BLEND);
+
+		if(doShaderClose) this.gl.useProgram(null);
+
+		return this;		
+	}
 }
+
 
 //##################################################################
 // SHADER UTILITIES

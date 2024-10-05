@@ -4,6 +4,7 @@ class Material {
         this.gl = gl;
         this.name = name;
         this.shader = shader;
+		this.uniforms = [];
 
         this.useCulling = gl.CULLING_STATE;
         this.useBlending = gl.BLENDING_STATE;
@@ -23,14 +24,16 @@ class Material {
 	//---------------------------------------------------
 	// Takes in one argument which is an array of triples which each represent one uniform and its neccessary info
 	// ex: [["uName1", "1fv", val1], ["uName2", "3fv", val2]]
-	createUniforms(uniformsArr) {
+	createUniforms() {
 		//if (!uniformsArr.isArray) {console.log("argument needs to be an array"); return this;}
 
 		var iLoc = 0,
 			iName = "",
 			iType = "",
 			iVal = 0;
-		if (uniformsArr.length > 0) {
+		if (this.uniforms.length > 0) {
+			var uniformsArr = this.uniforms;
+
 			for (var i=0; i<uniformsArr.length; i++) {
 				iName = uniformsArr[i][0];
 				iType = uniformsArr[i][1];
@@ -79,8 +82,8 @@ class Material {
 		return this;
 	}
 
-    activateShader(){ this.gl.useProgram(this.shader.program); return this; }
-	deactivateShader(){ this.gl.useProgram(null); return this; }
+    activateShader()   {this.shader.isActive = true; this.gl.useProgram(this.shader.program); return this; }
+	deactivateShader() {this.shader.isActive = false; this.gl.useProgram(null); return this; }
 
 	//function helps clean up resources when shader is no longer needed.
 	disposeProgram(){
