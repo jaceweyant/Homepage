@@ -1,7 +1,9 @@
 //#######################################################################
-// "HOMEPAGE" WEBGL NAMESPACE
-// File: "homepage.core.js"
+// HOMEPAGE WEBGL NAMESPACE
 // Author: Jace Weyant
+// Repo: "Homepage"
+// Branch: "dev/v14/namespacing"
+// File: "homepage.core.js"
 // Date Created: Oct 5, 2024
 //#######################################################################
 
@@ -193,7 +195,7 @@ var Homepage = (function() {
 
   // MATHS LIBRARY
   //#######################################################################
-  
+
     class Util {
 
         //Convert Hex colors to float arrays, can batch process a list into one big array.
@@ -802,8 +804,71 @@ var Homepage = (function() {
     }
 
 
-  // CONTROLLERS
+  // COMPONENT UTILITIES & CONTROLLERS
   //#######################################################################
+
+    class Transform {
+        constructor(){
+            //transform vectors
+            this.position	= new Vector3(0,0,0);	//Traditional X,Y,Z 3d position
+            this.scale		= new Vector3(1,1,1);	//How much to scale a mesh. Having a 1 means no scaling is done.
+            this.rotation	= new Vector3(0,0,0);	//Hold rotation values based on degrees, Object will translate it to radians
+            this.matView 	= new Matrix4();		//Cache the results when calling updateMatrix
+            this.matNormal	= new Float32Array(9);	//This is a Mat3, raw array to hold the values is enough for what its used for
+
+            this.rotationTo = {p1: new Vector3(0,0,1), p2: new Vector3(0,0,1)};
+
+            //quaternion rotation pars
+            this.axis		= new Vector3(1,0,0);
+            this.angle		= 0;
+
+            //Direction Vectors, Need 4 elements for math operations with matrices
+            this.forward	= new Float32Array(4);	//When rotating, keep track of what the forward direction is
+            this.up			= new Float32Array(4);	//what the up direction is, invert to get bottom
+            this.right		= new Float32Array(4);	//what the right direction is, invert to get left
+        }
+
+        //--------------------------------------------------------------------------
+        //Methods
+        updateMatrix(){
+            this.matView.reset() //Order is very important!!
+                .vtranslate(this.position)
+                .rotateX(this.rotation.x * Util.DEG2RAD)
+                .rotateZ(this.rotation.z * Util.DEG2RAD)
+                .rotateY(this.rotation.y * Util.DEG2RAD)
+                //.rotateTo(this.rotationTo.p1, this.rotationTo.p2)
+                .vscale(this.scale);
+
+            //Calcuate the Normal Matrix which doesn't need translate, then transpose and inverses the mat4 to mat3
+            Matrix4.normalMat3(this.matNormal,this.matView.raw);
+
+            //Determine Direction after all the transformations.
+            Matrix4.transformVec4(this.forward,	[0,0,1,0],this.matView.raw); //Z
+            Matrix4.transformVec4(this.up,		[0,1,0,0],this.matView.raw); //Y
+            Matrix4.transformVec4(this.right,	[1,0,0,0],this.matView.raw); //X
+
+            return this.matView.raw;
+        }
+
+        updateDirection(){
+            Matrix4.transformVec4(this.forward,	[0,0,1,0],this.matView.raw);
+            Matrix4.transformVec4(this.up,		[0,1,0,0],this.matView.raw);
+            Matrix4.transformVec4(this.right,	[1,0,0,0],this.matView.raw);
+            return this;
+        }
+
+        getViewMatrix(){	return this.matView.raw; }
+        getNormalMatrix(){  return this.matNormal;}
+
+        reset(){
+            this.position.set(0,0,0);
+            this.scale.set(1,1,1);
+            this.rotation.set(0,0,0);
+
+            this.axis.set(1,0,0);
+            this.angle = 0;
+        }
+    }
 
     class UI {
         constructor(camera, light, icosModel, nameModel, mouseFX) {
@@ -985,73 +1050,6 @@ var Homepage = (function() {
     
     
     
-    }
-
-
-  // COMPONENTS ATTRIBUTES AND UTILITIES
-  //#######################################################################
-
-    class Transform {
-        constructor(){
-            //transform vectors
-            this.position	= new Vector3(0,0,0);	//Traditional X,Y,Z 3d position
-            this.scale		= new Vector3(1,1,1);	//How much to scale a mesh. Having a 1 means no scaling is done.
-            this.rotation	= new Vector3(0,0,0);	//Hold rotation values based on degrees, Object will translate it to radians
-            this.matView 	= new Matrix4();		//Cache the results when calling updateMatrix
-            this.matNormal	= new Float32Array(9);	//This is a Mat3, raw array to hold the values is enough for what its used for
-    
-            this.rotationTo = {p1: new Vector3(0,0,1), p2: new Vector3(0,0,1)};
-    
-            //quaternion rotation pars
-            this.axis		= new Vector3(1,0,0);
-            this.angle		= 0;
-    
-            //Direction Vectors, Need 4 elements for math operations with matrices
-            this.forward	= new Float32Array(4);	//When rotating, keep track of what the forward direction is
-            this.up			= new Float32Array(4);	//what the up direction is, invert to get bottom
-            this.right		= new Float32Array(4);	//what the right direction is, invert to get left
-        }
-    
-        //--------------------------------------------------------------------------
-        //Methods
-        updateMatrix(){
-            this.matView.reset() //Order is very important!!
-                .vtranslate(this.position)
-                .rotateX(this.rotation.x * Util.DEG2RAD)
-                .rotateZ(this.rotation.z * Util.DEG2RAD)
-                .rotateY(this.rotation.y * Util.DEG2RAD)
-                //.rotateTo(this.rotationTo.p1, this.rotationTo.p2)
-                .vscale(this.scale);
-    
-            //Calcuate the Normal Matrix which doesn't need translate, then transpose and inverses the mat4 to mat3
-            Matrix4.normalMat3(this.matNormal,this.matView.raw);
-    
-            //Determine Direction after all the transformations.
-            Matrix4.transformVec4(this.forward,	[0,0,1,0],this.matView.raw); //Z
-            Matrix4.transformVec4(this.up,		[0,1,0,0],this.matView.raw); //Y
-            Matrix4.transformVec4(this.right,	[1,0,0,0],this.matView.raw); //X
-    
-            return this.matView.raw;
-        }
-    
-        updateDirection(){
-            Matrix4.transformVec4(this.forward,	[0,0,1,0],this.matView.raw);
-            Matrix4.transformVec4(this.up,		[0,1,0,0],this.matView.raw);
-            Matrix4.transformVec4(this.right,	[1,0,0,0],this.matView.raw);
-            return this;
-        }
-    
-        getViewMatrix(){	return this.matView.raw; }
-        getNormalMatrix(){  return this.matNormal;}
-    
-        reset(){
-            this.position.set(0,0,0);
-            this.scale.set(1,1,1);
-            this.rotation.set(0,0,0);
-    
-            this.axis.set(1,0,0);
-            this.angle = 0;
-        }
     }
 
     class ObjLoader {
@@ -1607,7 +1605,7 @@ var Homepage = (function() {
     }
 
 
-  // RENDERING
+  // RENDERING PIPELINE
   //#######################################################################
 
     class RenderLoop {
@@ -1707,7 +1705,7 @@ var Homepage = (function() {
     }
 
 
-  // RETURN OBJECT ALLOWS ACCESS TO HOMEPAGE CONTENTS
+  // RETURN OBJECT GIVES ACCESS TO HOMEPAGE CONTENTS IN DOM
   //#######################################################################
 
     return {
