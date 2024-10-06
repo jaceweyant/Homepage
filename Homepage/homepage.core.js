@@ -200,7 +200,8 @@ var Homepage = (function() {
             });
     
             document.getElementById("cam-fov").addEventListener("change", (e) => {
-                this.camera.fov = parseFloat(e.target.value); 
+                this.camera.fov = parseFloat(e.target.value);
+                Matrix4.perspective(this.camera.projectionMatrix, this.camera.fov, this.camera.ratio, this.camera.near, this.camera.far); 
             });
     
             // LIGHT
@@ -1225,9 +1226,11 @@ var Homepage = (function() {
         constructor(fov,near,far){
             //Setup the perspective matrix
             this.projectionMatrix = new Float32Array(16);
-            var ratio = gl.canvas.width / gl.canvas.height;
-            this.fov = fov;
-            Matrix4.perspective(this.projectionMatrix, this.fov || 45, ratio, near || 0.1, far || 100.0);
+            this.ratio = gl.canvas.width / gl.canvas.height;
+            this.fov = fov || 60;
+            this.near = near || 0.1;
+            this.far = far || 100.0;
+            Matrix4.perspective(this.projectionMatrix, this.fov, this.ratio, this.near, this.far);
     
             this.transform = new Transform();		//Setup transform to control the position of the camera
             this.viewMatrix = new Float32Array(16);	//Cache the matrix that will hold the inverse of the transform.
@@ -1236,7 +1239,13 @@ var Homepage = (function() {
         }
     
         setPosition(x,y,z) {this.transform.position.set(x,y,z); return this;}
-    
+
+        setCamSettings(fov, near, far) {
+            this.fov = fov;
+            Matrix4.perspective(this.projectionMatrix, this.fov, this.ratio, near, far);
+            return this;
+        }
+
         panX(v){
             if(this.mode == Camera.MODE_ORBIT) return; // Panning on the X Axis is only allowed when in free mode
             this.updateViewMatrix();

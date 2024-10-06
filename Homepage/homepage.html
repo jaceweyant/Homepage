@@ -169,6 +169,7 @@
                 Homepage.Init("glcanvas").fFitScreen(1.0, 1.0).fClear();
 				
                 if (Homepage.gl == null) console.error("no gl created by Init()");
+
 				//....................................
 				//Setup Uniforms, Shaders and Materials
 				//....................................
@@ -241,7 +242,7 @@
 			function onRender(dt){
 				Homepage.gl.fClear();
 				Homepage.gl.fFitScreen(1,1);
-				Homepage.Render([gIcos, gName], gCamera, gLight);
+				Homepage.Render([gIcos], gCamera, gLight);
 			}
 
 		</script>
