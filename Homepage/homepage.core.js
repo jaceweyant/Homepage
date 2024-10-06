@@ -1,7 +1,11 @@
 var Homepage = (function() {
 
-    gl = null;
+    var gl = null;
+
+
     function Init(canvasID) {
+        if (Homepage.gl != null) return Homepage.gl;
+
         var canvas = document.getElementById(canvasID),
 		gl = canvas.getContext("webgl2");
 
@@ -57,9 +61,9 @@ var Homepage = (function() {
 
                 this.bindBuffer(this.ARRAY_BUFFER, rtn.bufVertices);
                 this.bufferData(this.ARRAY_BUFFER, new Float32Array(aryVert), this.STATIC_DRAW);		//then push array into it.
-                this.enableVertexAttribArray(ATTR_POSITION_LOC);										//Enable Attribute location
-                //this.vertexAttribPointer(ATTR_POSITION_LOC,3,this.FLOAT,false,0,0);						//Put buffer at location of the vao\
-                this.vertexAttribPointer(ATTR_POSITION_LOC,rtn.vertexComponentLen,this.FLOAT,false,0,0);						//Put buffer at location of the vao
+                this.enableVertexAttribArray( Homepage.ATTR_POSITION_LOC);										//Enable Attribute location
+                //this.vertexAttribPointer( Homepage.ATTR_POSITION_LOC,3,this.FLOAT,false,0,0);						//Put buffer at location of the vao\
+                this.vertexAttribPointer( Homepage.ATTR_POSITION_LOC,rtn.vertexComponentLen,this.FLOAT,false,0,0);						//Put buffer at location of the vao
             }
 
             //.......................................................
@@ -68,8 +72,8 @@ var Homepage = (function() {
                 rtn.bufNormals = this.createBuffer();
                 this.bindBuffer(this.ARRAY_BUFFER, rtn.bufNormals);
                 this.bufferData(this.ARRAY_BUFFER, new Float32Array(aryNorm), this.STATIC_DRAW);
-                this.enableVertexAttribArray(ATTR_NORMAL_LOC);
-                this.vertexAttribPointer(ATTR_NORMAL_LOC,3,this.FLOAT,false, 0,0);
+                this.enableVertexAttribArray( Homepage.ATTR_NORMAL_LOC);
+                this.vertexAttribPointer( Homepage.ATTR_NORMAL_LOC,3,this.FLOAT,false, 0,0);
             }
 
             //.......................................................
@@ -78,8 +82,8 @@ var Homepage = (function() {
                 rtn.bufUV = this.createBuffer();
                 this.bindBuffer(this.ARRAY_BUFFER, rtn.bufUV);
                 this.bufferData(this.ARRAY_BUFFER, new Float32Array(aryUV), this.STATIC_DRAW);
-                this.enableVertexAttribArray(ATTR_UV_LOC);
-                this.vertexAttribPointer(ATTR_UV_LOC,2,this.FLOAT,false,0,0);	//UV only has two floats per component
+                this.enableVertexAttribArray( Homepage.ATTR_UV_LOC);
+                this.vertexAttribPointer( Homepage.ATTR_UV_LOC,2,this.FLOAT,false,0,0);	//UV only has two floats per component
             }
 
             //.......................................................
@@ -171,16 +175,136 @@ var Homepage = (function() {
         //Set the size of the canvas to fill a % of the total screen.
         gl.fFitScreen = function(wp,hp){ return this.fSetSize(window.innerWidth * (wp || 1),window.innerHeight * (hp || 1)); }
 
-        return gl;
+        return Homepage.gl = gl;
     }
 
-    class MathUtil {
+    class UI {
+        constructor(camera, light, icosModel, nameModel, mouseFX) {
+            this.gl = Homepage.gl;           //Do I need ???
+            this.camera = camera;
+            this.light = light;
+            this.icosModel = icosModel;
+            this.nameModel = nameModel;
+            this.mouseFX = mouseFX;
+    
+            // CAMERA
+            const camPos = this.camera.transform.position;
+            document.getElementById("cam-pos-x").addEventListener("change", (e) => {
+                camPos.set(parseFloat(e.target.value), camPos.y, camPos.z);
+            });
+            document.getElementById("cam-pos-y").addEventListener("change", (e) => {
+                camPos.set(camPos.x, parseFloat(e.target.value), camPos.z);
+            });
+            document.getElementById("cam-pos-z").addEventListener("change", (e) => {
+                camPos.set(camPos.x, camPos.y, parseFloat(e.target.value));
+            });
+    
+            document.getElementById("cam-fov").addEventListener("change", (e) => {
+                this.camera.fov = parseFloat(e.target.value); 
+            });
+    
+            // LIGHT
+            const lightPos = this.light.transform.position;
+            document.getElementById("light-pos-x").addEventListener("change", (e) => {
+                lightPos.set(parseFloat(e.target.value), lightPos.y, lightPos.z);
+            });
+            document.getElementById("light-pos-y").addEventListener("change", (e) => {
+                lightPos.set(lightPos.x, parseFloat(e.target.value), lightPos.z);
+            });
+            document.getElementById("light-pos-z").addEventListener("change", (e) => {
+                lightPos.set(lightPos.x, lightPos.y, parseFloat(e.target.value));
+            });
+    
+            document.getElementById("light-intensity").addEventListener("change", (e) => {
+                this.light.setIntensity(e.target.value);
+            });
+    
+            document.getElementById("light-color-r").addEventListener("change", (e) => {
+                this.light.setColor(parseFloat(e.target.value), this.light.color.y, this.light.color.z);
+            });
+            document.getElementById("light-color-g").addEventListener("change", (e) => {
+                this.light.setColor(this.light.color.x, parseFloat(e.target.value), this.light.color.z);
+            });
+            document.getElementById("light-color-b").addEventListener("change", (e) => {
+                this.light.setColor(this.light.color.x, this.light.color.y, parseFloat(e.target.value));
+            });
+    
+            // ICOS MODEL
+            const icosPos = this.icosModel.transform.position;
+            document.getElementById("icos-pos-x").addEventListener("change", (e) => {
+                this.icosModel.setPosition(parseFloat(e.target.value), icosPos.y, icosPos.z)
+                    .transform.updateMatrix();
+            });
+            document.getElementById("icos-pos-y").addEventListener("change", (e) => {
+                this.icosModel.setPosition(icosPos.x, parseFloat(e.target.value), icosPos.z)
+                    .transform.updateMatrix();
+            });
+            document.getElementById("icos-pos-z").addEventListener("change", (e) => {
+                this.icosModel.setPosition(icosPos.x, icosPos.y, parseFloat(e.target.value))
+                    .transform.updateMatrix();
+            });
+    
+            document.getElementById("icos-scale").addEventListener("change", (e) => {
+                this.icosModel.setScale(parseFloat(e.target.value), parseFloat(e.target.value), parseFloat(e.target.value))
+                    .transform.updateMatrix();
+            });
+    
+            // NAME MODEL
+            const namePos = this.nameModel.transform.position;
+            document.getElementById("name-pos-x").addEventListener("change", (e) => {
+                this.nameModel.setPosition(parseFloat(e.target.value), namePos.y, namePos.z)
+                    .transform.updateMatrix();
+            });
+            document.getElementById("name-pos-y").addEventListener("change", (e) => {
+                this.nameModel.setPosition(namePos.x, parseFloat(e.target.value), namePos.z)
+                    .transform.updateMatrix();
+            });
+            document.getElementById("name-pos-z").addEventListener("change", (e) => {
+                this.nameModel.setPosition(namePos.x, namePos.y, parseFloat(e.target.value))
+                    .transform.updateMatrix();
+            });
+    
+            document.getElementById("name-scale").addEventListener("change", (e) => {
+                this.nameModel.setScale(parseFloat(e.target.value), parseFloat(e.target.value), parseFloat(e.target.value))
+                    .transform.updateMatrix();
+            });
+    
+        }
+    }
+
+    class Util {
+
+		//Convert Hex colors to float arrays, can batch process a list into one big array.
+		//example : Fungi.Util.rgbArray("#FF0000","00FF00","#0000FF");
+		static rgbArray(){
+			if(arguments.length == 0) return null;
+			var rtn = [];
+
+			for(var i=0,c,p; i < arguments.length; i++){
+				if(arguments[i].length < 6) continue;
+				c = arguments[i];		//Just an alias(copy really) of the color text, make code smaller.
+				p = (c[0] == "#")?1:0;	//Determine starting position in char array to start pulling from
+
+				rtn.push(
+					parseInt(c[p]	+c[p+1],16)	/ 255.0,
+					parseInt(c[p+2]	+c[p+3],16)	/ 255.0,
+					parseInt(c[p+4]	+c[p+5],16)	/ 255.0
+				);
+			}
+			return rtn;
+		}        
+
         //Normalize x value to x range, then normalize to lerp the z range.
-        static Map(x, xMin,xMax, zMin,zMax){ return (x - xMin) / (xMax - xMin) * (zMax-zMin) + zMin; }
+        static map(x, xMin,xMax, zMin,zMax){ return (x - xMin) / (xMax - xMin) * (zMax-zMin) + zMin; }
+        static clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+		static smoothStep(edge1, edge2, val){ 
+			var x = Math.max(0, Math.min(1, (val-edge1)/(edge2-edge1)));
+			return x*x*(3-2*x);
+		}
         static to_rad(deg) {return deg * PI*2 / 360;}
         static fRound(n, p) {return Math.round(n * Math.pow(10,p)) / 100;}
     }
-    MathUtil.DEG2RAD = Math.PI/180;
+    Util.DEG2RAD = Math.PI/180;
 
     class Vector3 {
         constructor(x,y,z) {this.x = x || 0.0;	this.y = y || 0.0;	this.z = z || 0.0;}
@@ -190,7 +314,7 @@ var Homepage = (function() {
         set(x,y,z) 	{this.x = x; this.y = y; this.z = z; return this;}
         clone() 	{return new Vector3(this.x,this.y,this.z);}
 
-        getArray() 		{return [MathUtil.fRound(this.x,2), MathUtil.fRound(this.y,2), MathUtil.fRound(this.z,2)];}
+        getArray() 		{return [Util.fRound(this.x,2), Util.fRound(this.y,2), Util.fRound(this.z,2)];}
         getFloatArray() {return new Float32Array([this.x,this.y,this.z]);}
 
         magnitude(v) {
@@ -782,9 +906,9 @@ var Homepage = (function() {
         updateMatrix(){
             this.matView.reset() //Order is very important!!
                 .vtranslate(this.position)
-                .rotateX(this.rotation.x * Transform.deg2Rad)
-                .rotateZ(this.rotation.z * Transform.deg2Rad)
-                .rotateY(this.rotation.y * Transform.deg2Rad)
+                .rotateX(this.rotation.x * Util.DEG2RAD)
+                .rotateZ(this.rotation.z * Util.DEG2RAD)
+                .rotateY(this.rotation.y * Util.DEG2RAD)
                 //.rotateTo(this.rotationTo.p1, this.rotationTo.p2)
                 .vscale(this.scale);
     
@@ -944,8 +1068,8 @@ var Homepage = (function() {
     }
 
     class MouseEffects {
-        constructor(gl, object) {
-    
+        constructor(object) {
+            var gl = Homepage.gl;
             var box = gl.canvas.getBoundingClientRect();
             this.canvas = gl.canvas;		
             this.object = object;				
@@ -999,8 +1123,8 @@ var Homepage = (function() {
         }
     
         handleMouseMove_2(e) {
-            this.initX = MathUtil.Map(e.pageX, 0, this.canvas.width, -50, 50);
-            this.initY = MathUtil.Map(e.pageY, 0, this.canvas.height, -50, 50);
+            this.initX = Util.map(e.pageX, 0, this.canvas.width, -50, 50);
+            this.initY = Util.map(e.pageY, 0, this.canvas.height, -50, 50);
             this.prevX = this.initX;
             this.prevY = this.initY;
     
@@ -1040,6 +1164,12 @@ var Homepage = (function() {
             this.get_uniforms = null;
             this.visible = false;
         }
+
+        static create(name, meshData, material) {
+            var model = new Model(name, meshData, material);
+            Homepage.Res.Models[name] = model;
+            return model;
+        }
     
         applyMaterial(material) {this.material = material; return this;}
     
@@ -1047,7 +1177,7 @@ var Homepage = (function() {
     
         applyUniforms() {this.material.uniforms = this.get_uniforms(); this.material.createUniforms(); return this;}
     
-        applyMouseCtrl(gl) {this.mouseCtrl = MouseEffects.create(gl, this); return this;}
+        applyMouseCtrl() {this.mouseCtrl = MouseEffects.create(this); return this;}
     
         updateMouseCtrl() {if (this.mouseCtrl != null) {this.mouseCtrl.updateRotation();} return this;}
     
@@ -1092,7 +1222,7 @@ var Homepage = (function() {
     }
 
     class Camera {
-        constructor(gl,fov,near,far){
+        constructor(fov,near,far){
             //Setup the perspective matrix
             this.projectionMatrix = new Float32Array(16);
             var ratio = gl.canvas.width / gl.canvas.height;
@@ -1141,13 +1271,13 @@ var Homepage = (function() {
             if(this.mode == Camera.MODE_FREE){
                 this.transform.matView.reset()
                     .vtranslate(this.transform.position)
-                    .rotateX(this.transform.rotation.x * Transform.deg2Rad)
-                    .rotateY(this.transform.rotation.y * Transform.deg2Rad);
+                    .rotateX(this.transform.rotation.x * Util.DEG2RAD)
+                    .rotateY(this.transform.rotation.y * Util.DEG2RAD);
                     
             }else{
                 this.transform.matView.reset()
-                    .rotateX(this.transform.rotation.x * Transform.deg2Rad)
-                    .rotateY(this.transform.rotation.y * Transform.deg2Rad)
+                    .rotateX(this.transform.rotation.x * Util.DEG2RAD)
+                    .rotateY(this.transform.rotation.y * Util.DEG2RAD)
                     .vtranslate(this.transform.position);
     
             }
@@ -1170,9 +1300,9 @@ var Homepage = (function() {
 
     class Light {
     
-        constructor(gl) {
+        constructor() {
             this.transform = new Transform();
-            this.gl = gl;
+            //this.gl = gl;
     
             this.intensity = 1;
             this.color = new Vector3(1,1,1);
@@ -1189,13 +1319,16 @@ var Homepage = (function() {
     }
 
     class Shader {
-        constructor(gl, vertShader, fragShader, isText) {
+        constructor(name, vertShader, fragShader, isText) {
+            gl = Homepage.gl;
+
             if (!isText) {this.program = ShaderUtil.domShaderProgram(gl, vertShader, fragShader, true);}
             else		 {this.program = ShaderUtil.createProgramFromText(gl, vertShader, fragShader, true);}
     
             if (this.program != null) {
-                this.gl = gl;
                 gl.useProgram(this.program);
+
+                this.name = name;
     
                 this.isActive = true;
     
@@ -1204,20 +1337,23 @@ var Homepage = (function() {
             } else {console.log("program not found");}
         }
     
-        static create(gl, vertShader, fragShader, isText) {
-            return new Shader(gl, vertShader, fragShader, isText);
+        static create(name, vertShader, fragShader, isText) {
+            var shader = new Shader(name, vertShader, fragShader, isText);
+            Homepage.Res.Shaders[name] = shader;
+            return shader;
         }
+
         //---------------------------------------------------
         // Methods
         //---------------------------------------------------
-        activate(){ this.gl.useProgram(this.program); return this; }
-        deactivate(){ this.gl.useProgram(null); return this; }
+        activate(){ gl.useProgram(this.program); return this; }
+        deactivate(){ gl.useProgram(null); return this; }
     
         //function helps clean up resources when shader is no longer needed.
         dispose(){
             //unbind the program if its currently active
-            if(this.gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
-            this.gl.deleteProgram(this.program);
+            if (gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
+            gl.deleteProgram(this.program);
         }
     }
 
@@ -1235,7 +1371,10 @@ var Homepage = (function() {
         }
     
         //Create a shader by passing in its code and what type
-        static createShader(gl,src,type){
+        static createShader(gl, src,typeStr){
+            if (gl == null) console.log("gl not found");
+            var type = gl.VERTEX_SHADER;
+            if (typeStr == "fragment_shader") type = gl.FRAGMENT_SHADER;
             var shader = gl.createShader(type);
             gl.shaderSource(shader,src);
             gl.compileShader(shader);
@@ -1251,16 +1390,16 @@ var Homepage = (function() {
         }
     
         //Link two compiled shaders to create a program for rendering.
-        static createProgram(gl,vShader,fShader,doValidate){
+        static createProgram(gl, vShader,fShader,doValidate){
             //Link shaders together
             var prog = gl.createProgram();
             gl.attachShader(prog,vShader);
             gl.attachShader(prog,fShader);
     
             //Force predefined locations for specific attributes. If the attibute isn't used in the shader its location will default to -1
-            gl.bindAttribLocation(prog,ATTR_POSITION_LOC,ATTR_POSITION_NAME);
-            gl.bindAttribLocation(prog,ATTR_NORMAL_LOC,ATTR_NORMAL_NAME);
-            gl.bindAttribLocation(prog,ATTR_UV_LOC,ATTR_UV_NAME);
+            gl.bindAttribLocation(prog, Homepage.ATTR_POSITION_LOC, Homepage.ATTR_POSITION_NAME);
+            gl.bindAttribLocation(prog, Homepage.ATTR_NORMAL_LOC, Homepage.ATTR_NORMAL_NAME);
+            gl.bindAttribLocation(prog, Homepage.ATTR_UV_LOC, Homepage.ATTR_UV_NAME);
     
             gl.linkProgram(prog);
     
@@ -1293,20 +1432,20 @@ var Homepage = (function() {
         //-------------------------------------------------
         
         //Pass in Script Tag IDs for our two shaders and create a program from it.
-        static domShaderProgram(gl,vectID,fragID,doValidate){
+        static domShaderProgram(gl, vectID,fragID,doValidate){
             var vShaderTxt	= ShaderUtil.domShaderSrc(vectID);								if(!vShaderTxt)	return null;
             var fShaderTxt	= ShaderUtil.domShaderSrc(fragID);								if(!fShaderTxt)	return null;
-            var vShader		= ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER);		if(!vShader)	return null;
-            var fShader		= ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER);	if(!fShader){	gl.deleteShader(vShader); return null; }
+            var vShader		= ShaderUtil.createShader(gl, vShaderTxt,"vertex_shader");		if(!vShader)	return null;
+            var fShader		= ShaderUtil.createShader(gl, fShaderTxt,"fragment_shader");	if(!fShader){	gl.deleteShader(vShader); return null; }
             
-            return ShaderUtil.createProgram(gl,vShader,fShader,true);
+            return ShaderUtil.createProgram(gl, vShader,fShader,true);
         }
     
-        static createProgramFromText(gl,vShaderTxt,fShaderTxt,doValidate){
-            var vShader		= ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER);		if(!vShader)	return null;
-            var fShader		= ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER);	if(!fShader){	gl.deleteShader(vShader); return null; }
+        static createProgramFromText(gl, vShaderTxt,fShaderTxt,doValidate){
+            var vShader		= ShaderUtil.createShader(gl, vShaderTxt,gl.VERTEX_SHADER);		if(!vShader)	return null;
+            var fShader		= ShaderUtil.createShader(gl, fShaderTxt,gl.FRAGMENT_SHADER);	if(!fShader){	gl.deleteShader(vShader); return null; }
             
-            return ShaderUtil.createProgram(gl,vShader,fShader,true);
+            return ShaderUtil.createProgram(gl, vShader,fShader,true);
         }
     
         //-------------------------------------------------
@@ -1314,15 +1453,15 @@ var Homepage = (function() {
         //-------------------------------------------------
     
         //Get the locations of standard Attributes that we will mostly be using. Location will = -1 if attribute is not found.
-        static getStandardAttribLocations(gl,program){
+        static getStandardAttribLocations(gl, program){
             return {
-                position:	gl.getAttribLocation(program,ATTR_POSITION_NAME),
-                norm:		gl.getAttribLocation(program,ATTR_NORMAL_NAME),
-                uv:			gl.getAttribLocation(program,ATTR_UV_NAME)
+                position:	gl.getAttribLocation(program, Homepage.ATTR_POSITION_NAME),
+                norm:		gl.getAttribLocation(program, Homepage.ATTR_NORMAL_NAME),
+                uv:			gl.getAttribLocation(program, Homepage.ATTR_UV_NAME)
             };
         }
     
-        static getStandardUniformLocations(gl,program){
+        static getStandardUniformLocations(gl, program){
             return {
                 perspective:	gl.getUniformLocation(program,"uPMatrix"),
                 ModelMatrix:	gl.getUniformLocation(program,"uMVMatrix"),
@@ -1333,7 +1472,7 @@ var Homepage = (function() {
     }
 
     class Material {
-        constructor(gl, name, shader, drawMode) {
+        constructor(name, shader, drawMode) {
             this.gl = gl;
             this.name = name;
             this.shader = shader;
@@ -1347,8 +1486,9 @@ var Homepage = (function() {
             this.drawMode = drawMode || gl.TRIANGLES;
         }
     
-        static create(gl, name, shader, drawMode) {
-            var mat = new Material(gl, name, shader, drawMode);
+        static create(name, shader, drawMode) {
+            var mat = new Material(name, shader, drawMode);
+            Homepage.Res.Materials[name] = mat;
             return mat;
         }
     
@@ -1477,7 +1617,9 @@ var Homepage = (function() {
         stop(){ this.isActive = false; }
     }
 
-    var Render = function(gl, ary, camera, light) {
+    var Render = function(ary, camera, light) {
+
+        var gl = Homepage.gl;
 
         camera.updateViewMatrix();
         light.updateViewMatrix();
@@ -1516,19 +1658,32 @@ var Homepage = (function() {
     
             //Cleanup
             gl.bindVertexArray(null);
-    
         }
-    
     
     }
 
     return {
-        Init:Init,
-        UI:UI,
-        Math : {MathUtil:MathUtil, Vector3:Vector3, Matrix4:Matrix4},
+        //STARTUP
+        Init:Init, gl:null, Util:Util, UI:UI,
+        //RESOURCES CACHE
+        Res : {Models:[], Materials:[], Shaders:[], fUniformBlocks:[], Textures:[]},
+        //MATH OBJECTS
+        Maths : {Vector3:Vector3, Matrix4:Matrix4},
+        //MODEL CTRL HANDLERS
         Transform:Transform, ObjLoader:ObjLoader, MouseEffects:MouseEffects,
+        //COMPONENTS
         Model:Model, Camera:Camera, Light:Light,
+        //MATERIAL AND SHADER
         Shader:Shader, Material:Material,
+        //RENDERING
         RenderLoop:RenderLoop, Render:Render,
-    }
+
+        //GLOBAL CONSTANTS
+        ATTR_POSITION_NAME	: "a_position",
+        ATTR_POSITION_LOC	: 0,
+        ATTR_NORMAL_NAME	: "a_norm",
+        ATTR_NORMAL_LOC		: 1,
+        ATTR_UV_NAME		: "a_uv",
+        ATTR_UV_LOC			: 2,
+    };
 })();
