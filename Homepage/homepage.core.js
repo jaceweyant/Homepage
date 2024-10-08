@@ -1,11 +1,11 @@
-//#######################################################################
-// HOMEPAGE WEBGL NAMESPACE
-// Author: Jace Weyant
-// Repo: "Homepage"
-// Branch: "dev/v14/namespacing"
-// File: "homepage.core.js"
-// Date Created: Oct 5, 2024
-//#######################################################################
+//###################################//
+// HOMEPAGE WEBGL NAMESPACE          //
+// Author: Jace Weyant               //
+// Repo: "Homepage"                  //
+// Branch: "dev/v14/namespacing"     //
+// File: "homepage.core.js"          //
+// Date Created: Oct 5, 2024         //
+//###################################//
 
 var Homepage = (function() {
 
@@ -1187,7 +1187,7 @@ var Homepage = (function() {
             this.color = new Vector3(1,1,1);
             this.mesh = meshData;
             this.material = material;
-            this.get_uniforms = null;
+            //this.get_uniforms = null;
             this.visible = false;
         }
 
@@ -1196,24 +1196,19 @@ var Homepage = (function() {
             Homepage.Res.Models[name] = model;
             return model;
         }
-    
-        applyMaterial(material) {this.material = material; return this;}
-    
-        setUniformsGetter(get_uniforms) {this.get_uniforms = get_uniforms; return this;}
-    
-        applyUniforms() {this.material.uniforms = this.get_uniforms(); this.material.createUniforms(); return this;}
+
+        updateUniforms() {if (this.material.get instanceof Function) {console.log("in Model.updateUniforms: get is a func"); this.material.createUniforms();} else {console.log("in Model.updateUniforms: get not a func"); return this;}}
     
         applyMouseCtrl() {this.mouseCtrl = MouseEffects.create(this); return this;}
     
         updateMouseCtrl() {if (this.mouseCtrl != null) {this.mouseCtrl.updateRotation();} return this;}
     
         //DEPRECIATED
-        updateUniforms(uniformsAry) {
-            if (uniformsAry != null) {
-                this.material.uniforms = uniformsAry;
+        updateUniforms() {
+            if (this.material.uniforms.get instanceof Function) {
                 this.material.createUniforms();
-                return this;
             }
+            return this;
         }
     
         //--------------------------------------------------------------------------
@@ -1509,12 +1504,32 @@ var Homepage = (function() {
         }
     }
 
+    class Uniforms {
+        constructor() {
+            this.name = "";
+            this.get = null;
+            this.ary = [];
+        }
+
+        static create(name, f) {
+            var uniforms = new Uniforms();
+            uniforms.name = name;
+            uniforms.get = f;
+            Homepage.Res.Uniforms[name] = uniforms;
+            return uniforms;
+        }
+
+        updateArray() {this.ary = this.get(); return this;}
+
+        getArray() {return this.ary;}
+    }
+
     class Material {
-        constructor(name, shader, drawMode) {
+        constructor(name, shader, uniforms, drawMode) {
             this.gl = gl;
             this.name = name;
             this.shader = shader;
-            this.uniforms = [];
+            this.uniforms = uniforms;
     
             this.useCulling = gl.CULLING_STATE;
             this.useBlending = gl.BLENDING_STATE;
@@ -1524,8 +1539,8 @@ var Homepage = (function() {
             this.drawMode = drawMode || gl.TRIANGLES;
         }
     
-        static create(name, shader, drawMode) {
-            var mat = new Material(name, shader, drawMode);
+        static create(name, shader, uniforms, drawMode) {
+            var mat = new Material(name, shader, uniforms, drawMode);
             Homepage.Res.Materials[name] = mat;
             return mat;
         }
@@ -1536,19 +1551,17 @@ var Homepage = (function() {
         // Takes in one argument which is an array of triples which each represent one uniform and its neccessary info
         // ex: [["uName1", "1fv", val1], ["uName2", "3fv", val2]]
         createUniforms() {
-            //if (!uniformsArr.isArray) {console.log("argument needs to be an array"); return this;}
-    
-            var iLoc = 0,
+            var uniformsAry = this.uniforms.get(), 
+                iLoc = 0,
                 iName = "",
                 iType = "",
                 iVal = 0;
-            if (this.uniforms.length > 0) {
-                var uniformsArr = this.uniforms;
-    
-                for (var i=0; i<uniformsArr.length; i++) {
-                    iName = uniformsArr[i][0];
-                    iType = uniformsArr[i][1];
-                    iVal = uniformsArr[i][2];
+
+            if (uniformsAry.length > 0) {    
+                for (var i=0; i<uniformsAry.length; i++) {
+                    iName = uniformsAry[i][0];
+                    iType = uniformsAry[i][1];
+                    iVal = uniformsAry[i][2];
     
                     iLoc = gl.getUniformLocation(this.shader.program, iName);
                     if (iLoc == null) {console.log("location of uniform not found: " + iName); return this;}
@@ -1565,6 +1578,7 @@ var Homepage = (function() {
                     }
                 }
             }
+
             return this;
         }
     
@@ -1670,7 +1684,7 @@ var Homepage = (function() {
     
         for (var i=0; i<ary.length; i++) {
     
-            ary[0].updateMouseCtrl().updateViewMatrix().applyUniforms();
+            ary[0].updateMouseCtrl().updateViewMatrix().updateUniforms();
     
             //if (!ary[i].visible) {console.log("in render"); continue;}
             //Check if the next material to use is different from the last
@@ -1709,18 +1723,25 @@ var Homepage = (function() {
   //#######################################################################
 
     return {
+
         //STARTUP
-        Init:Init, gl:null, Util:Util, UI:UI,
+        Init:Init, gl:gl, Util:Util, UI:UI,
+
         //RESOURCES CACHE
-        Res : {Models:[], Materials:[], Shaders:[], fUniformBlocks:[], Textures:[]},
+        Res : {Models:[], Materials:[], Shaders:[], Uniforms:[], Textures:[]},
+
         //MATH OBJECTS
         Maths : {Vector3:Vector3, Matrix4:Matrix4},
+
         //MODEL CTRL HANDLERS
         Transform:Transform, ObjLoader:ObjLoader, MouseEffects:MouseEffects,
+
         //COMPONENTS
         Model:Model, Camera:Camera, Light:Light,
+
         //MATERIAL AND SHADER
-        Shader:Shader, Material:Material,
+        Shader:Shader, Uniforms:Uniforms, Material:Material,
+
         //RENDERING
         RenderLoop:RenderLoop, Render:Render,
 
