@@ -226,13 +226,14 @@ Maths = (function() {
         vscale(vec3) 	  {Matrix4.scale(this.raw,vec3.x,vec3.y,vec3.z); return this;}
         scale(x,y,z) 	  {Matrix4.scale(this.raw,x,y,z); 				 return this;}
 
-        rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		return this;}
-        rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		return this;}
-        rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		return this;}
+        rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		 return this;}
+        rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		 return this;}
+        rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		 return this;}
+        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,angle); return this;}
+        rotateB(u,v)      {Matrix4.rotateB(this.raw,u,v);        return this;}
 
-        rotateA(axis,rad) {Matrix4.rotate(this.raw, rad, axis); return this;}
-        //rotateTo(v,u)	  {Matrix4.rotateTo_1(this.raw, v, u);  return this;}		// Using Rodriguez
-        rotateTo(v,u)     {Matrix4.rotateTo_2(this.raw, v, u);  return this;}
+        //rotateA(axis,rad) {Matrix4.rotate(this.raw, rad, axis); return this;}
+        //rotateTo(v,u)     {Matrix4.rotateTo_2(this.raw, v, u);  return this;}
         
         invert()	 	  {Matrix4.invert(this.raw); return this;}
         
@@ -625,6 +626,7 @@ Maths = (function() {
         }
 
         //General rotation matrix method -- could suffer from gimbal lock
+        /*
         static rotate(out, rad, axis) {
             var x = axis[0], y = axis[1], z = axis[2],
                 len = Math.sqrt(x * x + y * y + z * z),
@@ -670,6 +672,7 @@ Maths = (function() {
             out[10] = a02 * b20 + a12 * b21 + a22 * b22;
             out[11] = a03 * b20 + a13 * b21 + a23 * b22;
         }
+        */
 
       //NEW
       // TRYING TO DO AXIS-ANGLE-ROTATION AND ROTATE-TO WITHOUT QUATERNIONS
@@ -679,30 +682,17 @@ Maths = (function() {
         //Applies rotation matrix from axis and angle to current matrix
         static rotateQ(out, axis, angle) {
             var a  = new Matrix4(out),
-                b  = Quaternion.rotationMatrix(Quaternion.createFromAxisAngle(axis, angle));
+                b  = Matrix4.axisAngleMatrix(axis,angle);
                 ab = Matrix4.multiply(a,b);
             out = ab.raw;
             return out;
         }
 
-        //DEPRECIATED
-        //##################################################################################################
-        //Rotation bringing vector p1 to vector p2 using the Rodriguex Rotation Matrix
-        static rotateTo_1(out, p1, p2) {    // NEW
-            var a = out,
-                b =  Matrix4.rodriquezMat4(p1,p2).raw;
-            Matrix4.mult(out,a,b);
-            return out;	
-
-        }
-
-        //Rotation bringing vector p1 to vector p2 using the Axis-Angle Rotation Matrix
-        static rotateTo_2(out, v, u) {      // NEW
-            var axis = Vector3.cross(v,u).normalize(),
-                angle = Math.acos(Vector3.dot(v.normalize(),u.normalize())),
-                a = out,
-                b = Matrix4.axisangleMat4(axis, angle).raw;
-            Matrix4.mult(out,a,b);
+        static rotateB(out, from, to) {
+            var a  = new Matrix4(out),
+                b  = Quaternion.fromToMatrix(from,to);
+                ab = Matrix4.multiply(a,b);
+            out = ab.raw;
             return out;
         }
 
@@ -754,6 +744,7 @@ Maths = (function() {
             return true;
         }
 
+
         //get skew-symmetric cross product matrix of a vector
         static skewMat4(v) {
             var m = new Matrix4();
@@ -762,24 +753,6 @@ Maths = (function() {
             m[4] = -v.z;  m[5] = 0;     m[6] = v.x;  m[7] = 0;
             m[8] = -v.y;  m[9] = -v.x;  m[10] = 0;   m[11] = 0;
             m[12] = 0;    m[13] = 0;    m[14] = 0;   m[15] = 0;
-
-            return m;
-        }
-
-        
-        static axisangleMat4(n,rad) {       //DEPRECIATED ???
-            var c = Math.cos(rad),
-                s = Math.sin(rad),
-                t = 1 - c,
-                x = x / n.magnitude(),
-                y = y / n.magnitude(),
-                z = z / n.magnitude();
-
-            var m = new Matrix4();
-            m[0] = t*x*x + c;    m[1] = t*x*y - z*s;  m[2] = t*x*z + y*s;  m[3] = 0;
-            m[4] = t*x*y + z*s;  m[5] = t*y*y + c;    m[6] = t*y*z - x*s;  m[7] = 0;
-            m[8] = t*x*z - y*s;  m[9] = t*y*z + x*s;  m[10] = t*z*z + c;   m[11] = 0;
-            m[12] = 0;           m[13] = 0;           m[14] = 0;           m[15] = 0;
 
             return m;
         }
@@ -802,6 +775,11 @@ Maths = (function() {
 
         static axisAngleMatrix(axis, angle) {
             var q = Quaternion.createFromAxisAngle(axis, angle);
+            return Quaternion.rotationMatrix(q);
+        }
+
+        static fromToMatrix(from, to) {
+            var q = Quaternion.createFrom2Vectors(from, to);
             return Quaternion.rotationMatrix(q);
         }
 
