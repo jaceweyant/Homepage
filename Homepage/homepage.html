@@ -143,8 +143,8 @@
 		</div>
 
 		<div id="js-files">
-			<script src="homepage.core.js">
-			</script>
+			<script src="homepage.core.js"></script>
+			<script src="lib/Maths.js"></script>
 		</div>
 
 		<script>
@@ -208,9 +208,10 @@
 				gLight = new Homepage.Light();
 				gLight.setPosition(1,0,4).setIntensity(0.5).setColor(1,1,1);
 
+
 				gIcos = Homepage.Model.create("IcosModel", Homepage.ObjLoader.domToMesh("objIcos", "icosObj-file", true, true), gIcosMat);
 				gIcos.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
-					 .applyMouseCtrl()
+					 //.applyMouseCtrl()
 					 .updateViewMatrix()
                      .updateUniforms();
 				
@@ -218,6 +219,9 @@
 				gName.setPosition(0,0,0).setScale(.6, .6, .6).setColor(0.8, 0.24, 0.0)
 					 .updateViewMatrix()
                      .updateUniforms();
+
+				var testFX = new Homepage.TestMouseFX(gIcos);
+
 
 
 				//....................................

@@ -62,6 +62,8 @@ var Maths = (function() {
             return Math.sqrt( x*x + y*y + z*z );
         }
 
+        print() {console.log([this.x, this.y, this.z]);}
+
         // Transformations
         //....................................................................
         normalize()  {var mag = this.magnitude(); this.x /= mag; this.y /= mag; this.z /= mag; return this;}
@@ -737,4 +739,3 @@ var Maths = (function() {
 
 })();
 
-export default Maths;
