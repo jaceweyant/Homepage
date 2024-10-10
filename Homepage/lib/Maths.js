@@ -227,7 +227,7 @@ var Maths = (function() {
         rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		 return this;}
         rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		 return this;}
         rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		 return this;}
-        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad); return this;}
+        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad);   return this;}
         rotateB(u,v)      {Matrix4.rotateB(this.raw,u,v);        return this;}
         
         invert()	 	  {Matrix4.invert(this.raw); return this;}  //Used for Camera Matrix
@@ -626,12 +626,15 @@ var Maths = (function() {
             //NEW
             //Applies rotation matrix from axis and angle to current matrix
         static rotateQ(out, axis, angle) {
-            if (axis == null) {console.error("axis == null -- rotateQ line 1391")}
-                var a  = new Matrix4(out),
-                    b  = Matrix4.axisAngleMatrix(axis,angle),
-                    ab = Matrix4.multiply(a,b);
-                out = ab.raw;
-                return out;
+            if (axis == null) {console.error("axis == null -- rotateQ line 630")}
+
+            var a  = new Matrix4(out),
+                b  = Matrix4.axisAngleMatrix(axis,angle),
+                ab = Matrix4.multiply(a,b);
+            
+
+            out = ab.raw;
+            return out;
         }
 
         static rotateB(out, from, to) {

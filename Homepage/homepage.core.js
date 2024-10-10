@@ -418,7 +418,7 @@ var Homepage = (function() {
         rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		 return this;}
         rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		 return this;}
         rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		 return this;}
-        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad); return this;}
+        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad);   return this;}
         rotateB(u,v)      {Matrix4.rotateB(this.raw,u,v);        return this;}
         
         invert()	 	  {Matrix4.invert(this.raw); return this;}  //Used for Camera Matrix
@@ -817,12 +817,18 @@ var Homepage = (function() {
             //NEW
             //Applies rotation matrix from axis and angle to current matrix
         static rotateQ(out, axis, angle) {
+            console.log("IN : static rotateQ()");
             if (axis == null) {console.error("axis == null -- rotateQ line 1391")}
-                var a  = new Matrix4(out),
-                    b  = Matrix4.axisAngleMatrix(axis,angle),
-                    ab = Matrix4.multiply(a,b);
-                out = ab.raw;
-                return out;
+
+            var a  = new Matrix4(out),
+                b  = Matrix4.axisAngleMatrix(axis,angle),
+                ab = Matrix4.multiply(a,b);
+            console.log("V*R = " + ab.raw);
+
+            out = ab.raw;
+            console.log("out = " + out);
+
+            return out;
         }
 
         static rotateB(out, from, to) {
@@ -1228,6 +1234,27 @@ var Homepage = (function() {
             console.log(this.component.transform.matView.raw);
         }
 
+
+    }
+
+    class TestRotation {
+        constructor(model) {
+            this.model = model;
+        }
+
+        create(model) {
+            var test = new TestRotation();
+            return test;
+        }
+
+        updateRotation(aX, aY, aZ, angle) {
+            console.log("init matView: " + this.model.transform.matView);
+            this.model.transform.axis = new Vector3(aX, aY, aZ);
+            this.model.transform.angle = angle;
+            this.model.updateViewMatrix();
+            console.log("rotated matView: " + this.model.transform.matView);
+            return this;
+        }
 
     }
 
@@ -1911,7 +1938,7 @@ var Homepage = (function() {
 
         //MODEL CTRL HANDLERS
         Transform:Transform, ObjLoader:ObjLoader, MouseEffects:MouseEffects,
-        TestMouseFX:TestMouseFX,
+        TestMouseFX:TestMouseFX, TestRotation:TestRotation,
 
         //COMPONENTS
         Model:Model, Camera:Camera, Light:Light,

@@ -211,16 +211,17 @@
 
 				gIcos = Homepage.Model.create("IcosModel", Homepage.ObjLoader.domToMesh("objIcos", "icosObj-file", true, true), gIcosMat);
 				gIcos.setPosition(0,0,0).setScale(1,1,1).setColor(1,1,1)
-					 //.applyMouseCtrl()
-					 .updateViewMatrix()
-                     .updateUniforms();
+					.applyMouseCtrl()
+					.updateViewMatrix()
+                    .updateUniforms();
 				
 				gName = Homepage.Model.create("NameModel", Homepage.ObjLoader.domToMesh("objName", "nameObj-file", true, true), gNameMat);
 				gName.setPosition(0,0,0).setScale(.6, .6, .6).setColor(0.8, 0.24, 0.0)
 					 .updateViewMatrix()
                      .updateUniforms();
 
-				var testFX = new Homepage.TestMouseFX(gIcos);
+				//var testFX = new Homepage.TestRotation(gIcos);
+				//testFX.updateRotation(0,1,0, 90.0);
 
 
 
