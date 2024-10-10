@@ -742,3 +742,5 @@ var Maths = (function() {
 
 })();
 
+export default Maths;
+

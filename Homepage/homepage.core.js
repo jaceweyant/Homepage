@@ -9,6 +9,8 @@
 
 //Imports
 //#######################################################################
+import Maths from "./lib/Maths.js";
+
 
 var Homepage = (function() {
 
