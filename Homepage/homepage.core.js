@@ -409,21 +409,22 @@ var Homepage = (function() {
         // Transformation Methods
         //##################################################################################################
 
-        vtranslate(v)	  {Matrix4.translate(this.raw,v.x,v.y,v.z); return this;}
-        translate(x,y,z)  {Matrix4.translate(this.raw,x,y,z); 		return this;}
+        vtranslate(v)	  {Matrix4.translate(this.raw,v.x,v.y,v.z);       return this;}
+        translate(x,y,z)  {Matrix4.translate(this.raw,x,y,z); 		      return this;}
 
-        vscale(vec3) 	  {Matrix4.scale(this.raw,vec3.x,vec3.y,vec3.z); return this;}
-        scale(x,y,z) 	  {Matrix4.scale(this.raw,x,y,z); 				 return this;}
+        vscale(vec3) 	  {Matrix4.scale(this.raw,vec3.x,vec3.y,vec3.z);  return this;}
+        scale(x,y,z) 	  {Matrix4.scale(this.raw,x,y,z); 				  return this;}
 
-        rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		 return this;}
-        rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		 return this;}
-        rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		 return this;}
-        rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad);   return this;}
-        rotateB(u,v)      {Matrix4.rotateB(this.raw,u,v);        return this;}
+        rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		          return this;}
+        rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		          return this;}
+        rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		          return this;}
+
+        rotateQ(axis,rad) {this.raw = Matrix4.rotateQ(this.raw,axis,rad); return this;}
+        rotateB(u,v)      {this.raw = Matrix4.rotateB(this.raw,u,v);      return this;}
         
-        invert()	 	  {Matrix4.invert(this.raw); return this;}  //Used for Camera Matrix
+        invert()	 	  {Matrix4.invert(this.raw);                      return this;}  //Used for Camera Matrix
         
-        clone() 	 	  {new Matrix4(this.raw); return this;}
+        clone() 	 	  {new Matrix4(this.raw);                         return this;}
         
         
         // Reset Methods
@@ -811,22 +812,16 @@ var Homepage = (function() {
         }
 
         //NEW
-        // TRYING TO DO AXIS-ANGLE-ROTATION AND ROTATE-TO WITHOUT QUATERNIONS
-        //##################################################################################################
-
-            //NEW
-            //Applies rotation matrix from axis and angle to current matrix
+        //Applies rotation matrix from axis and angle to current matrix
+        //For some reason when you put this.raw in as out it doesn't change it globally
+        //So instead in the non-static I wrote this.raw = Matrix4.rotateQ()
         static rotateQ(out, axis, angle) {
-            console.log("IN : static rotateQ()");
             if (axis == null) {console.error("axis == null -- rotateQ line 1391")}
 
             var a  = new Matrix4(out),
                 b  = Matrix4.axisAngleMatrix(axis,angle),
                 ab = Matrix4.multiply(a,b);
-            console.log("V*R = " + ab.raw);
-
             out = ab.raw;
-            console.log("out = " + out);
 
             return out;
         }
@@ -1118,6 +1113,9 @@ var Homepage = (function() {
             this.prevY = 0;		
 
             this.mousePlane = new Vector3(0,0,0);
+            this.axis = new Vector3(0,0,1);
+            this.axisX = new Vector3(1,0,0);
+            this.axisY = new Vector3(0,1,0);
     
             this.lagFactor = 0.3;
             this.deceleration = 0.95;
@@ -1155,18 +1153,6 @@ var Homepage = (function() {
             this.prevX = this.initX;
             this.prevY = this.initY;
         }
-    
-        handleMouseMove_2(e) {
-            this.initX = Util.map(e.pageX, 0, this.canvas.width, -50, 50);
-            this.initY = Util.map(e.pageY, 0, this.canvas.height, -50, 50);
-            this.prevX = this.initX;
-            this.prevY = this.initY;
-    
-            this.p2.set(this.initX, this.initY, 2);
-            this.object.transform.fromVec = this.p1;
-            this.object.transform.toVec = this.p2;
-            this.object.updateViewMatrix();
-        }
 
         handleMouseMove_fromTo(e) {
             this.mousePlane.x = Util.map(e.pageX, 0, this.canvas.width, -1, 1);
@@ -1176,6 +1162,18 @@ var Homepage = (function() {
             this.object.transform.toVec = this.mousePlane.normalize();
             this.object.updateViewMatrix();
         }
+
+        handleMouseMove_axisAngle(e) {
+            this.mousePlane.x = Util.map(e.pageX, 0, this.canvas.width, -1, 1);
+            this.mousePlane.y = Util.map(e.pageY, 0, this.canvas.height, -1, 1);
+
+            this.axis.set(this.mousePlane.x, this.mousePlane.y, 2).normalize();
+
+            this.object.transform.rotation.axis = this.axis;
+            this.object.transform.rotation.angle = this.mousePlane.x * 90;
+            //console.log(this.object.transform.angle);
+            this.object.updateViewMatrix();
+        }
     
         handleClick(e) {}
     
@@ -1183,7 +1181,7 @@ var Homepage = (function() {
             this.lagX *= this.deceleration;
             this.lagY *= this.deceleration;
 
-            //this.object.transform.axis = new Vector3(0,1,0);
+            //this.object.transform.axis = this.axisY;
             //this.object.transform.angle += -this.lagX * (this.rotateRate / this.canvas.width);
 
             this.object.transform.rotation.y += -this.lagX * (this.rotateRate / this.canvas.width);
@@ -1194,47 +1192,6 @@ var Homepage = (function() {
             //if (this.object.transform.getNormalMatrix() == prevNormMat) console.log("equal");
         }
     
-    }
-
-    class TestMouseFX {
-        constructor(component) {
-            var gl = Homepage.gl;
-            var box = gl.canvas.getBoundingClientRect();
-            this.canvas = gl.canvas;		
-            this.component = component;
-
-            this.offsetX = box.left;
-            this.offsetY = box.top;
-
-            this.angleConstant = 100;
-
-            this.mouseX = 0;
-            this.mouseY = 0;
-
-            this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
-        }
-
-        create(component) {
-            return new TestMouseFX(component);
-        }
-
-        //rotateQ() doesn't affect the view matrix
-        handleMouseMove(e) {
-            this.mouseX = Util.map(e.pageX - this.offsetX, 0, this.canvas.width, -1, 1);
-            this.mouseY = Util.map(e.pageY - this.offsetY, 0, this.canvas.height, 1, -1);
-            console.log("mouseX = " + this.mouseX + "  mouseY = " + this.mouseY);
-
-            this.component.transform.axis = new Vector3(0,1,0);
-            this.component.transform.angle = this.angleConstant * this.mouseX;
-
-            this.component.transform.axis.print();
-            console.log(this.component.transform.angle);
-
-            this.component.updateViewMatrix();
-            console.log(this.component.transform.matView.raw);
-        }
-
-
     }
 
     class TestRotation {
@@ -1248,11 +1205,16 @@ var Homepage = (function() {
         }
 
         updateRotation(aX, aY, aZ, angle) {
-            console.log("init matView: " + this.model.transform.matView);
+            var initMatView = this.model.transform.matView.clone();
+            var initAngle = this.model.transform.angle;
+
             this.model.transform.axis = new Vector3(aX, aY, aZ);
             this.model.transform.angle = angle;
+
             this.model.updateViewMatrix();
-            console.log("rotated matView: " + this.model.transform.matView);
+            //if (initAngle == this.model.transform.angle)     {console.error("angle unchanged");}
+            //if (initMatView == this.model.transform.matView) {console.error("matrices unchanged after updating");}
+
             return this;
         }
 
@@ -1890,7 +1852,10 @@ var Homepage = (function() {
     
         for (var i=0; i<ary.length; i++) {
     
-            ary[0].updateMouseCtrl().updateViewMatrix().updateUniforms();
+            ary[0]
+                .updateMouseCtrl()
+                .updateViewMatrix()
+                .updateUniforms();
     
             //if (!ary[i].visible) {console.log("in render"); continue;}
             //Check if the next material to use is different from the last
@@ -1938,7 +1903,7 @@ var Homepage = (function() {
 
         //MODEL CTRL HANDLERS
         Transform:Transform, ObjLoader:ObjLoader, MouseEffects:MouseEffects,
-        TestMouseFX:TestMouseFX, TestRotation:TestRotation,
+        TestRotation:TestRotation,
 
         //COMPONENTS
         Model:Model, Camera:Camera, Light:Light,

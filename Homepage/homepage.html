@@ -151,6 +151,7 @@
 			var gl, gRLoop,
 				gIcos, gIcosUniforms, gIcosMat,
 				gName, gNameUniforms, gNameMat,
+				gMouseCtrl,
 				gMainShader,
 				gCamera, gLight, gMouseCtrl,
 			    oUI;
@@ -220,9 +221,7 @@
 					 .updateViewMatrix()
                      .updateUniforms();
 
-				//var testFX = new Homepage.TestRotation(gIcos);
-				//testFX.updateRotation(0,1,0, 90.0);
-
+				//gMouseCtrl = new Homepage.MouseEffects(gIcos);
 
 
 				//....................................
@@ -234,6 +233,7 @@
 				//....................................
 				//Start Rendering
 				//....................................
+
 				gRLoop = new Homepage.RenderLoop(onRender,30).start();
 
 			});
