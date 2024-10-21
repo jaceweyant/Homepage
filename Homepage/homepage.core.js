@@ -44,6 +44,7 @@ var Homepage = (function() {
         //gl.clearColor(1.0,1.0,1.0,1.0);	//Set clear color
         gl.clearColor(1.0,1.0,1.0,0.0);	//Set clear color
 
+        
         //...................................................
         //Methods
         
@@ -1192,32 +1193,6 @@ var Homepage = (function() {
             //if (this.object.transform.getNormalMatrix() == prevNormMat) console.log("equal");
         }
     
-    }
-
-    class TestRotation {
-        constructor(model) {
-            this.model = model;
-        }
-
-        create(model) {
-            var test = new TestRotation();
-            return test;
-        }
-
-        updateRotation(aX, aY, aZ, angle) {
-            var initMatView = this.model.transform.matView.clone();
-            var initAngle = this.model.transform.angle;
-
-            this.model.transform.axis = new Vector3(aX, aY, aZ);
-            this.model.transform.angle = angle;
-
-            this.model.updateViewMatrix();
-            //if (initAngle == this.model.transform.angle)     {console.error("angle unchanged");}
-            //if (initMatView == this.model.transform.matView) {console.error("matrices unchanged after updating");}
-
-            return this;
-        }
-
     }
 
     class ObjLoader {
