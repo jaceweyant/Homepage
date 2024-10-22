@@ -205,8 +205,8 @@ var Homepage = (function() {
 
             this.axis         = new Vector3();
             this.angle        = 0;
-            this.fromVec      = new Vector3(0,0,1);
-            this.toVec        = new Vector3(0,0,1);
+            this.from      = new Vector3(0,0,1);
+            this.to        = new Vector3(0,0,1);
     
             this.matView 	 = new Matrix4();		
             this.matNormal	 = new Float32Array(9);
@@ -227,7 +227,7 @@ var Homepage = (function() {
                 .rotateY(this.rotation.y * Util.DEG2RAD)
                 .rotateZ(this.rotation.z)
                 .rotateQ(this.axis, this.angle)
-                .rotateB(this.fromVec, this.toVec)
+                .rotateB(this.from, this.to)
                 .vscale(this.scale);
     
             Matrix4.normalMat3(this.matNormal, this.matView.raw);
@@ -389,8 +389,7 @@ var Homepage = (function() {
             this.p1 = new Vector3(0,0,1);
             this.p2 = new Vector3(0,0,1);
     
-            this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
-            this.canvas.addEventListener("onclick", this.handleClick.bind(this));
+            this.canvas.addEventListener("mousemove", this.handleMouseMove_fromTo.bind(this));
     
             //Simulate deceleration and update rotation
             //setInterval(this.updateRotation.bind(this), 16);
@@ -418,12 +417,10 @@ var Homepage = (function() {
         }
 
         handleMouseMove_fromTo(e) {
-            this.mousePlane.x = Util.map(e.pageX, 0, this.canvas.width, -1, 1);
-            this.mousePlane.y = Util.map(e.pageY, 0, this.canvas.height, -1, 1);
+            this.mousePlane.x = Util.map(e.pageX, 0, this.canvas.width, 2, -2);
+            this.mousePlane.y = Util.map(e.pageY, 0, this.canvas.height, -2, 2);
             this.mousePlane.z = 2;
-            this.object.transform.fromVec = new Vector3(0,0,1);
-            this.object.transform.toVec = this.mousePlane.normalize();
-            this.object.updateViewMatrix();
+            
         }
 
         handleMouseMove_axisAngle(e) {
@@ -441,44 +438,40 @@ var Homepage = (function() {
         handleClick(e) {}
     
         updateRotation() {
-            this.lagX *= this.deceleration;
-            this.lagY *= this.deceleration;
+            //this.lagX *= this.deceleration;
+            //this.lagY *= this.deceleration;
 
-            //this.object.transform.axis = this.axisY;
-            //this.object.transform.angle += -this.lagX * (this.rotateRate / this.canvas.width);
+            //this.object.transform.rotation.y += -this.lagX * (this.rotateRate / this.canvas.width);
+            //this.object.transform.rotation.x += -this.lagY * (this.rotateRate / this.canvas.width);
 
-            this.object.transform.rotation.y += -this.lagX * (this.rotateRate / this.canvas.width);
-            this.object.transform.rotation.x += -this.lagY * (this.rotateRate / this.canvas.width);
+            this.object.transform.to = this.mousePlane.normalize();
     
-            //var prevNormMat = this.object.transform.getNormalMatrix();
             this.object.updateViewMatrix();
-            //if (this.object.transform.getNormalMatrix() == prevNormMat) console.log("equal");
         }
     
     }
 
-    class TestRotation {
-        constructor(model) {
-            this.model = model;
+    class Test {
+        constructor() {
+            this.model = null;
+            this.canvas = Homepage.gl.canvas;
         }
 
-        create(model) {
-            var test = new TestRotation();
+        static rotate_TEST(model) {
+            var test = new Test();
+            test.model = model;
+            test.canvas.addEventListener("onClick", test.handleRotate.bind(this));
             return test;
         }
 
-        updateRotation(aX, aY, aZ, angle) {
-            var initMatView = this.model.transform.matView.clone();
-            var initAngle = this.model.transform.angle;
-
-            this.model.transform.axis = new Vector3(aX, aY, aZ);
-            this.model.transform.angle = angle;
-
+        handleRotate() {
+            this.model.transform.to.x += 10;
             this.model.updateViewMatrix();
-            //if (initAngle == this.model.transform.angle)     {console.error("angle unchanged");}
-            //if (initMatView == this.model.transform.matView) {console.error("matrices unchanged after updating");}
+        }
 
-            return this;
+        static performRotate(model) {
+            model.transform.to.x += 100;
+            return model;
         }
 
     }
@@ -1114,11 +1107,12 @@ var Homepage = (function() {
             shader = null;
     
         for (var i=0; i<ary.length; i++) {
-    
-            ary[0]
+
+            ary[i]
                 .updateMouseCtrl()
                 .updateViewMatrix()
                 .updateUniforms();
+
     
             //if (!ary[i].visible) {console.log("in render"); continue;}
             //Check if the next material to use is different from the last
@@ -1166,7 +1160,7 @@ var Homepage = (function() {
 
         //MODEL CTRL HANDLERS
         Transform:Transform, ObjLoader:ObjLoader, MouseEffects:MouseEffects,
-        TestRotation:TestRotation,
+        Test:Test,
 
         //COMPONENTS
         Model:Model, Camera:Camera, Light:Light,

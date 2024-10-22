@@ -147,7 +147,7 @@
 		</div>
 
 		<script type="module">
-      import Homepage from "./homepage.core.js";
+      		import Homepage from "./homepage.core.js";
 
 			var gl, gRLoop,
 				gIcos, gIcosUniforms, gIcosMat,
@@ -155,6 +155,7 @@
 				gMouseCtrl,
 				gMainShader,
 				gCamera, gLight, gMouseCtrl,
+				gTest,
 			    oUI;
 
 			var uiElem = document.getElementById("uniforms-UI");
@@ -223,7 +224,7 @@
                      .updateUniforms();
 
 				//gMouseCtrl = new Homepage.MouseEffects(gIcos);
-
+				gTest = Homepage.Test.rotate_TEST(gIcos);
 
 				//....................................
 				//Setup UI Functionality

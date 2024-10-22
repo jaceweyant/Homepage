@@ -187,8 +187,8 @@ class Matrix4 {
     rotateY(rad)	  {Matrix4.rotateY(this.raw,rad); 		 return this;}
     rotateX(rad)	  {Matrix4.rotateX(this.raw,rad); 		 return this;}
     rotateZ(rad)	  {Matrix4.rotateZ(this.raw,rad); 		 return this;}
-    rotateQ(axis,rad) {Matrix4.rotateQ(this.raw,axis,rad);   return this;}
-    rotateB(u,v)      {Matrix4.rotateB(this.raw,u,v);        return this;}
+    rotateQ(axis,rad) {this.raw = Matrix4.rotateQ(this.raw,axis,rad);   return this;}
+    rotateB(u,v)      {this.raw = Matrix4.rotateB(this.raw,u,v);        return this;}
     
     invert()	 	  {Matrix4.invert(this.raw); return this;}  //Used for Camera Matrix
     
