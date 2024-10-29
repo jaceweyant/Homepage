@@ -7,7 +7,9 @@ var Homepage = (function() {
 
     // PRIVATE SCOPE VARIABLES 
     //#######################################################################
-    var gl = null;
+    var gl = null,
+        CULLING_STATE = true,
+        BLENDING_STATE = false;
 
 
     // GL CONTEXT SETUP
@@ -637,9 +639,9 @@ var Homepage = (function() {
     
         //--------------------------------------------------------------------------
         //Getters/Setters
-        setScale(x,y,z){ this.transform.scale.set(x,y,z); return this; }
-        setPosition(x,y,z){ this.transform.position.set(x,y,z); return this; }
-        setRotation(x,y,z){ this.transform.rotation.set(x,y,z); return this; }
+        setScale(x,y,z)    { this.transform.scale.set(x,y,z); return this; }
+        setPosition(x,y,z) { this.transform.position.set(x,y,z); return this; }
+        setRotation(x,y,z) { this.transform.rotation.set(x,y,z); return this; }
     
         setColor() {
             if (arguments.length == 3) {
@@ -657,9 +659,9 @@ var Homepage = (function() {
         }
         
     
-        addScale(x,y,z){	this.transform.scale.x += x;	this.transform.scale.y += y;	this.transform.scale.y += y;	return this; }
-        addPosition(x,y,z){	this.transform.position.x += x; this.transform.position.y += y; this.transform.position.z += z; return this; }
-        addRotation(x,y,z){	this.transform.rotation.x += x; this.transform.rotation.y += y; this.transform.rotation.z += z; return this; }
+        addScale(x,y,z)    {this.transform.scale.x += x;	this.transform.scale.y += y;	this.transform.scale.y += y;	return this; }
+        addPosition(x,y,z) {	this.transform.position.x += x; this.transform.position.y += y; this.transform.position.z += z; return this; }
+        addRotation(x,y,z) {	this.transform.rotation.x += x; this.transform.rotation.y += y; this.transform.rotation.z += z; return this; }
     
         //--------------------------------------------------------------------------
         //Things to do before its time to render
