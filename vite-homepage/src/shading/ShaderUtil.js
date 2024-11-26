@@ -16,7 +16,7 @@ class ShaderUtil {
         if (gl == null) console.log("gl not found");
         var type = gl.VERTEX_SHADER;
         if (typeStr == "fragment_shader") type = gl.FRAGMENT_SHADER;
-        var shader = gl.createShader(type);
+        var shader = gl.ctx.createShader(type);
         gl.shaderSource(shader,src);
         gl.compileShader(shader);
 

@@ -1,18 +1,18 @@
 
 // GL CONTEXT SETUP
 //#######################################################################
-
 var ctx = null;
-var canvas = null;
 
 const ATTR_POSITION_LOC = 0;
 const ATTR_NORM_LOC = 1;
 const ATTR_UV_LOC = 2;
 
-var Init = function(canvasID) {
+
+var Init = function(canvas, wp, hp, bgColor) {
 	//........................................
 	//Get Context
-    canvas = document.getElementById(canvasID);
+    if (typeof canvas == "string") {canvas = document.getElementById(canvas);}
+    else {console.error("canvas is not tring: " + canvas);}
 	ctx = canvas.getContext("webgl2");
 	if (!ctx) {console.error("WebGL context is not available."); return;}
 
@@ -30,10 +30,40 @@ var Init = function(canvasID) {
 	fClear();											//Clear the canvas
 
 	return ctx;
-}();
+};
 
 //Reset the canvas with our set background color.	
 var fClear = function(){ ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT); return ctx; }
+
+function fSetClearColor(hex){
+	var a = rgbArray(hex);
+	ctx.clearColor(a[0],a[1],a[2],1.0);
+	return this;
+}
+
+
+//------------------------------------------------------
+//Misc
+//------------------------------------------------------
+function rgbArray(){
+	if(arguments.length == 0) return null;
+	var ary = (Array.isArray(arguments[0]))? arguments[0] : arguments;
+	var rtn = [];
+
+	for(var i=0,c,p; i < ary.length; i++){
+		if(ary[i].length < 6) continue;
+		c = ary[i];				//Just an alias(copy really) of the color text, make code smaller.
+		p = (c[0] == "#")?1:0;	//Determine starting position in char array to start pulling from
+
+		rtn.push(
+			parseInt(c[p]	+c[p+1],16)	/ 255.0,
+			parseInt(c[p+2]	+c[p+3],16)	/ 255.0,
+			parseInt(c[p+4]	+c[p+5],16)	/ 255.0
+		);
+	}
+	return rtn;
+}
+
 
 //Create and fill our Array buffer.
 var fCreateArrayBuffer = function(floatAry,isStatic){
@@ -175,12 +205,11 @@ var fSetSize = function(w,h){
 }
 
 //Set the size of the canvas to fill a % of the total screen.
-var fFitScreen = function(wp,hp){ return ctx.fSetSize(window.innerWidth * (wp || 1),window.innerHeight * (hp || 1)); }
+var fFitScreen = function(wp,hp) {return fSetSize(window.innerWidth * (wp || 1),window.innerHeight * (hp || 1)); }
 
 var gl = {
-    Init:Init,
-    ctx:null,
-    canvas:canvas,
+    set:Init,
+    ctx:ctx,
     width:0,
     height:0,
 
